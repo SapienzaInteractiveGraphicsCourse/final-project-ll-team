@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Luigi's Circuit</title>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+        <script src="utils/earcut.min.js"></script>
+    </head>
+
+   <body>
+
+    <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
+
+    <script>
+        const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+        const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+        // better have some global variables to have them always available
+        var car;
+        var groundMat, streetMat, borderMat;
+
+        const createScene = () => {
+            
+            const scene = new BABYLON.Scene(engine);
+            const camera = new BABYLON.FollowCamera("camera", new BABYLON.Vector3(0, 0, 0), scene);
+            camera.attachControl(canvas, true);
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
+
+            // building the ground as the base of our environment
+            groundMat = new BABYLON.StandardMaterial("groundMat");
+            groundMat.diffuseTexture = new BABYLON.Texture("textures/t_kusa_070712c.png");
+            
+            const ground = BABYLON.MeshBuilder.CreateGround("ground", {width:60, height:60});
+            ground.position.y = 0.49;
+            ground.material = groundMat;
+
+            // building the street
+            streetMat = new BABYLON.StandardMaterial("streetMat");
+            streetMat.diffuseTexture = new BABYLON.Texture("textures/mainROAD_all_mip.png");
+            
+            const street = BABYLON.MeshBuilder.CreateBox("street", {width:10, height:60, depth:1});
+            street.rotation.x = Math.PI / 2;
+            street.material = streetMat;
+
+            // building the environment arounf the street
+            borderMat = new BABYLON.StandardMaterial("borderMat");
+            borderMat.diffuseTexture = new BABYLON.Texture("textures/t_waki_070712a_mip.png");
+            
+            const border = BABYLON.MeshBuilder.CreateBox("border", {width:1, height:60, depth:1});
+            border.rotation.x = Math.PI / 2;
+            border.position.x = -5.5;
+            border.material = borderMat;
+
+            const otherBorder = border.clone();
+            border.rotation.z = Math.PI;
+            otherBorder.position.x = 5.5;
+
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/", "Buggy.gltf", scene).then((result) => {
+                car = result.meshes[0];
+                car.scaling = new BABYLON.Vector3(0.02, 0.02, -0.02);
+                car.position.y = 0.7;
+                car.position.x = -1.5;
+                
+                // the camera will follow the car with this
+                camera.lockedTarget = car;
+                
+                
+            });
+
+            // adding sounds
+            const soundStart = new BABYLON.Sound("soundStart", "sounds/mk64_racestart.wav", scene, function(){
+                soundStart.play();
+            });
+
+            // once the start sound is over we proceed with the countdown
+            soundStart.onended = function(){
+
+                // countdown for the race to start
+                var countTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                var i = 3; // seconds
+                var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
+                textBlock.color = "white";
+                textBlock.fontSize = 70;
+                textBlock.fontFamily = "impact";
+                
+                countTexture.addControl(textBlock);
+                var handle = window.setInterval(() => {
+                    i--;
+                    textBlock.text = new String(i)
+
+                    if (i === 0) {
+                        textBlock.text = "GO!"
+                    }
+
+                    if (i == -1){
+                        window.clearInterval(handle);
+
+                        textBlock.dispose();
+                        countTexture.dispose();
+                    }
+                }, 1000);
+                
+                const countSound = new BABYLON.Sound("countSound", "sounds/mk64_countdown.wav", scene, function(){
+                    countSound.play();
+                });
+                
+                countSound.onended = function(){
+                    startRace(car, streetMat);
+                }
+            };
+        
+            return scene;
+        };
+
+        function setImpedance(camera) {
+            impedance = 0.0
+            
+            if (car.position.x > 5.5) impedance = 0.005;
+            else if (car.position.x < -5.5) impedance = 0.005;
+            else impedance = 0.0;
+
+            return impedance;
+        }
+
+        function startRace(car, streetMat) {
+            
+            // let's start the soundtrack of the Luigi's Circuit
+            const luigiSound = new BABYLON.Sound("luigiSound", "sounds/mk64_luigicircuit.mp3", scene, function(){
+                luigiSound.play();
+            });
+
+            // if the car is out of the street I will have more friction
+            var impedance = 0.0;
+            
+            scene.registerBeforeRender(function () {
+                streetMat.diffuseTexture.vOffset += 0.01 - impedance;
+                borderMat.diffuseTexture.vOffset += 0.01 - impedance;
+                groundMat.diffuseTexture.vOffset += 0.01 - impedance;
+            });
+
+            scene.onKeyboardObservable.add((kbInfo) => {
+                switch (kbInfo.type) {
+                    case BABYLON.KeyboardEventTypes.KEYDOWN:
+                        switch (kbInfo.event.key) {
+                            case "a":
+                            case "A":
+                                car.position.x -= 0.5;
+                                impedance = setImpedance(car);
+                            break
+                            case "d":
+                            case "D":
+                                car.position.x += 0.5;
+                                impedance = setImpedance(car);
+                            break
+                            case "w":
+                            case "W":
+
+                                streetMat.diffuseTexture.vOffset += 0.02 - impedance;
+                                borderMat.diffuseTexture.vOffset += 0.02 - impedance;
+                                groundMat.diffuseTexture.vOffset += 0.02 - impedance;
+                            break
+                            case "s":
+                            case "S":
+                                streetMat.diffuseTexture.vOffset += 0.0;
+                                borderMat.diffuseTexture.vOffset += 0.0;
+                                groundMat.diffuseTexture.vOffset += 0.0;
+                            break
+                        }
+                    break;
+                }
+            });
+        }
+
+        const scene = createScene(); //Call the createScene function
+        
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+                scene.render();
+        });
+
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+                engine.resize();
+        });
+    </script>
+
+   </body>
+
+</html>
