@@ -3,7 +3,7 @@
 
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <title>Super Mario Bros.</title>
+        <title>Mario Kart</title>
 
         <style>
             html, body {
@@ -24,6 +24,7 @@
         <script src="https://cdn.babylonjs.com/babylon.js"></script>
         <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
         <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+        <script src="utils/earcut.min.js"></script>
     </head>
 
    <body>
@@ -34,87 +35,78 @@
         const canvas = document.getElementById("renderCanvas"); // Get the canvas element
         const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
-        const createScene =  () => {
+        const createScene = () => {
+            
             const scene = new BABYLON.Scene(engine);
-
-            /**** Set camera and light *****/
-            const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 10, new BABYLON.Vector3(0, 0, 0));
+            const camera = new BABYLON.FollowCamera("camera", new BABYLON.Vector3(0, 0, 0), scene);
             camera.attachControl(canvas, true);
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
-            
-            /**** Sound ****/
-            const sound = new BABYLON.Sound("level1_sound", "sounds/level1.mp3", scene, null, { loop: true, autoplay: true });
 
-            const ground = buildGround();
-            const house = buildHouse(2); //width of house 1 or 2
+            // building the ground
+            const groundMat = new BABYLON.StandardMaterial("groundMat");
+            groundMat.diffuseTexture = new BABYLON.Texture("textures/mainROAD_all_mip.png");
             
+            const ground = BABYLON.MeshBuilder.CreateGround("ground", {width:10, height:30});
+            ground.material = groundMat;
+            
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/", "Buggy.gltf", scene).then((result) => {
+                var car = result.meshes[0];
+                car.scaling = new BABYLON.Vector3(0.02, 0.02, -0.02);
+                camera.lockedTarget = car;
+                
+                
+                scene.registerBeforeRender(function () {
+                    car.position.z += 0.005;
+                    groundMat.diffuseTexture.vOffset += 0.01;
+                });
+                
+
+                scene.onKeyboardObservable.add((kbInfo) => {
+                    switch (kbInfo.type) {
+                        case BABYLON.KeyboardEventTypes.KEYDOWN:
+                            switch (kbInfo.event.key) {
+                                case "a":
+                                case "A":
+                                    car.position.x -= 0.5;
+                                break
+                                case "d":
+                                case "D":
+                                    car.position.x += 0.5;
+                                break
+                                case "w":
+                                case "W":
+                                    car.position.z += 0.02;
+                                    groundMat.diffuseTexture.vOffset += 0.1;
+                                break
+                                case "s":
+                                case "S":
+                                    car.position.z += 0;
+                                    groundMat.diffuseTexture.vOffset += 0.0;
+                                break
+                            }
+                        break;
+                    }
+                });
+                
+            });
+            
+            
+        
             return scene;
-        }
+        };
 
         /******Build Functions***********/
+        
         const buildGround = () => {
             //color
             const groundMat = new BABYLON.StandardMaterial("groundMat");
-            groundMat.diffuseColor = new BABYLON.Color3(0, 1, 0);
+            groundMat.diffuseTexture = new BABYLON.Texture("textures/mainROAD_all_mip.png");
             
             const ground = BABYLON.MeshBuilder.CreateGround("ground", {width:10, height:10});
             ground.material = groundMat;
         }
 
-        const buildHouse = (width) => {
-            const box = buildBox(width);
-            const roof = buildRoof(width);
-
-            return BABYLON.Mesh.MergeMeshes([box, roof], true, false, null, false, true);
-        }
-        const buildBox = (width) => {
-            //texture
-            const boxMat = new BABYLON.StandardMaterial("boxMat");
-            if (width == 2) {
-            boxMat.diffuseTexture = new BABYLON.Texture("https://assets.babylonjs.com/environments/semihouse.png") 
-            }
-            else {
-                boxMat.diffuseTexture = new BABYLON.Texture("https://assets.babylonjs.com/environments/cubehouse.png");   
-            }
-
-            //options parameter to set different images on each side
-            const faceUV = [];
-            if (width == 2) {
-                faceUV[0] = new BABYLON.Vector4(0.6, 0.0, 1.0, 1.0); //rear face
-                faceUV[1] = new BABYLON.Vector4(0.0, 0.0, 0.4, 1.0); //front face
-                faceUV[2] = new BABYLON.Vector4(0.4, 0, 0.6, 1.0); //right side
-                faceUV[3] = new BABYLON.Vector4(0.4, 0, 0.6, 1.0); //left side
-            }
-            else {
-                faceUV[0] = new BABYLON.Vector4(0.5, 0.0, 0.75, 1.0); //rear face
-                faceUV[1] = new BABYLON.Vector4(0.0, 0.0, 0.25, 1.0); //front face
-                faceUV[2] = new BABYLON.Vector4(0.25, 0, 0.5, 1.0); //right side
-                faceUV[3] = new BABYLON.Vector4(0.75, 0, 1.0, 1.0); //left side
-            }
-            // top 4 and bottom 5 not seen so not set
-
-            /**** World Objects *****/
-            const box = BABYLON.MeshBuilder.CreateBox("box", {width: width, faceUV: faceUV, wrap: true});
-            box.material = boxMat;
-            box.position.y = 0.5;
-
-            return box;
-        }
-
-        const buildRoof = (width) => {
-            //texture
-            const roofMat = new BABYLON.StandardMaterial("roofMat");
-            roofMat.diffuseTexture = new BABYLON.Texture("https://assets.babylonjs.com/environments/roof.jpg");
-
-            const roof = BABYLON.MeshBuilder.CreateCylinder("roof", {diameter: 1.3, height: 1.2, tessellation: 3});
-            roof.material = roofMat;
-            roof.scaling.x = 0.75;
-            roof.scaling.y = width;
-            roof.rotation.z = Math.PI / 2;
-            roof.position.y = 1.22;
-
-            return roof;
-        }
+       
 
         const scene = createScene(); //Call the createScene function
         
