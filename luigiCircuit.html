@@ -51,17 +51,135 @@
             groundMat = new BABYLON.StandardMaterial("groundMat");
             groundMat.diffuseTexture = new BABYLON.Texture("textures/t_kusa_070712c.png");
             
-            const ground = BABYLON.MeshBuilder.CreateGround("ground", {width:60, height:60});
+            const ground = BABYLON.MeshBuilder.CreateDisc("ground", {radius: 60}, scene);
+            ground.rotation.x = Math.PI / 2;
             ground.position.y = 0.49;
             ground.material = groundMat;
 
             // building the street
             streetMat = new BABYLON.StandardMaterial("streetMat");
             streetMat.diffuseTexture = new BABYLON.Texture("textures/mainROAD_all_mip.png");
+            streetMat.diffuseTexture.hasAlpha = true;
             
             const street = BABYLON.MeshBuilder.CreateBox("street", {width:10, height:60, depth:1});
             street.rotation.x = Math.PI / 2;
             street.material = streetMat;
+            var pos_z = 60
+            for (i=0; i<6; i++){
+                other_street = street.clone()
+                other_street.position.z = pos_z;
+                pos_z += 60;
+            }
+            
+            // first curve: we divide it in 4 pieces with an incremental orientation
+            angle = Math.PI / 6;
+            const curve = BABYLON.MeshBuilder.CreateBox("street", {width:10, height:40, depth:1});
+            curve.rotation.x = Math.PI / 2;
+            curve.position.z = pos_z - 10;
+            pos_z += 30;
+            var pos_x = 20 * Math.sin(angle);
+            curve.material = streetMat;
+            for (i=0; i<3; i++){
+                other_curve = curve.clone();
+                other_curve.rotation.y = angle;
+                other_curve.position.z = pos_z - 5;
+                other_curve.position.x = pos_x;
+                pos_z += 40 * Math.cos(angle) - (10*(i+1)) * Math.cos(angle);
+                if (i == 0) pos_x += 40 * Math.sin(angle) + 10 * Math.sin(angle);
+                else pos_x += 40 * Math.sin(angle);
+                angle += Math.PI / 6;   
+            }
+
+            // second 'rettilineo' of other pieces of street
+            pos_z -= 5;
+            for (i=0; i<6; i++){
+                other_street = street.clone()
+                other_street.rotation.y = Math.PI / 2;
+                other_street.position.z = pos_z;
+                other_street.position.x = pos_x;
+                pos_x += 60;
+            }
+
+            // second curve: specular of the first one
+            angle = Math.PI / 2 + Math.PI / 6;
+            other_curve = curve.clone();
+            other_curve.rotation.y = Math.PI / 2;
+            other_curve.position.x = pos_x - 20;
+            other_curve.position.z = pos_z;    
+            pos_x += 20;
+
+            for (i=0; i<3; i++){
+                other_curve = curve.clone();
+                other_curve.rotation.y = angle;
+                other_curve.position.z = pos_z - 10;
+                other_curve.position.x = pos_x;
+                pos_z += 40 * Math.cos(angle) + (10*(i+1)) * Math.cos(angle);
+                pos_x += 40 * Math.sin(angle) - 10 * Math.sin(angle);
+                
+                angle += Math.PI / 6;   
+            }
+
+            // other straight line (greater than the previous one)
+            for (i=0; i<18; i++){
+                other_street = street.clone()
+                other_street.position.z = pos_z;
+                other_street.position.x = pos_x;
+                pos_z -= 60;
+            }
+
+            // third curve
+            angle = Math.PI + Math.PI / 6;
+            other_curve = curve.clone();
+            other_curve.position.z = pos_z - 20;
+            other_curve.position.x = pos_x;    
+            pos_z += 20;
+
+            for (i=0; i<3; i++){
+                other_curve = curve.clone();
+                other_curve.rotation.y = angle;
+                other_curve.position.z = pos_z - 10;
+                other_curve.position.x = pos_x;
+                pos_z += 40 * Math.cos(angle) + (10*(i+1)) * Math.cos(angle);
+                pos_x += 40 * Math.sin(angle) - 10 * Math.sin(angle);
+                
+                angle += Math.PI / 6;   
+            }
+
+            // third straight line
+            for (i=0; i<8; i++){
+                other_street = street.clone()
+                other_street.rotation.y = Math.PI / 2;
+                other_street.position.z = pos_z;
+                other_street.position.x = pos_x;
+                pos_x -= 60;
+            }
+
+            // forth and last curve
+            angle = 3 * Math.PI / 2 + Math.PI / 6;
+            other_curve = curve.clone();
+            other_curve.position.z = pos_z;
+            other_curve.position.x = pos_x - 20;        
+            pos_x -= 20;
+
+            for (i=0; i<3; i++){
+                other_curve = curve.clone();
+                other_curve.rotation.y = angle;
+                other_curve.position.z = pos_z - 10;
+                other_curve.position.x = pos_x;
+                pos_z += 40 * Math.cos(angle) + (10*(i+1)) * Math.cos(angle);
+                pos_x += 40 * Math.sin(angle) - 10 * Math.sin(angle);
+                
+                angle += Math.PI / 6;   
+            }
+
+            // forth and last straight line
+            for (i=0; i<11; i++){
+                other_street = street.clone()
+                other_street.rotation.y = Math.PI;
+                other_street.position.z = pos_z;
+                other_street.position.x = pos_x;
+                pos_z += 60;
+            }
 
             // building the environment arounf the street
             borderMat = new BABYLON.StandardMaterial("borderMat");
@@ -81,10 +199,9 @@
                 car.scaling = new BABYLON.Vector3(0.02, 0.02, -0.02);
                 car.position.y = 0.7;
                 car.position.x = -1.5;
-                
+                car.rotation.y = 90;
                 // the camera will follow the car with this
                 camera.lockedTarget = car;
-                
                 
             });
 
@@ -136,8 +253,8 @@
         function setImpedance(camera) {
             impedance = 0.0
             
-            if (car.position.x > 5.5) impedance = 0.005;
-            else if (car.position.x < -5.5) impedance = 0.005;
+            if (car.position.x > 5.5) impedance = 0.25;
+            else if (car.position.x < -5.5) impedance = 0.25;
             else impedance = 0.0;
 
             return impedance;
@@ -154,9 +271,7 @@
             var impedance = 0.0;
             
             scene.registerBeforeRender(function () {
-                streetMat.diffuseTexture.vOffset += 0.01 - impedance;
-                borderMat.diffuseTexture.vOffset += 0.01 - impedance;
-                groundMat.diffuseTexture.vOffset += 0.01 - impedance;
+                car.position.z += 0.5 - impedance;
             });
 
             scene.onKeyboardObservable.add((kbInfo) => {
@@ -165,26 +280,22 @@
                         switch (kbInfo.event.key) {
                             case "a":
                             case "A":
-                                car.position.x -= 0.5;
+                                car.rotation.y -= Math.PI / 6;
                                 impedance = setImpedance(car);
                             break
                             case "d":
                             case "D":
-                                car.position.x += 0.5;
+                                car.rotation.y += Math.PI / 6;
                                 impedance = setImpedance(car);
                             break
                             case "w":
                             case "W":
+                                car.position.z += 1;
 
-                                streetMat.diffuseTexture.vOffset += 0.02 - impedance;
-                                borderMat.diffuseTexture.vOffset += 0.02 - impedance;
-                                groundMat.diffuseTexture.vOffset += 0.02 - impedance;
                             break
                             case "s":
                             case "S":
-                                streetMat.diffuseTexture.vOffset += 0.0;
-                                borderMat.diffuseTexture.vOffset += 0.0;
-                                groundMat.diffuseTexture.vOffset += 0.0;
+                                car.position.z += 0.1;
                             break
                         }
                     break;
