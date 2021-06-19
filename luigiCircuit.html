@@ -199,7 +199,8 @@
                 car.scaling = new BABYLON.Vector3(0.02, 0.02, -0.02);
                 car.position.y = 0.7;
                 car.position.x = -1.5;
-                car.rotation.y = 90;
+                car.rotationQuaternion = null;
+                car.rotation.y = Math.PI;
                 // the camera will follow the car with this
                 camera.lockedTarget = car;
                 
@@ -250,7 +251,7 @@
             return scene;
         };
 
-        function setImpedance(camera) {
+        function setImpedance(car) {
             impedance = 0.0
             
             if (car.position.x > 5.5) impedance = 0.25;
@@ -260,8 +261,34 @@
             return impedance;
         }
 
+        function updateInfo(lap, position) {
+            var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+            let x = new BABYLON.GUI.TextBlock('TextBlock', '120'); 
+
+            var rect1 = new BABYLON.GUI.Rectangle();
+            rect1.width = 0.25;
+            rect1.horizontalAlignment = 0;
+            rect1.verticalAlignment = 0;
+            rect1.height = "40px";
+            rect1.cornerRadius = 10;
+            rect1.color = "black";
+            rect1.thickness = 4;
+            rect1.background = "grey";
+            advancedTexture.addControl(rect1);
+            rect1.addControl(x);
+            x.text = 'Lap:' + String(lap) + ', Position:' + String(position);
+        }
+
+        var lap = 1;
+        var position = 1;
+
         function startRace(car, streetMat) {
             
+            updateInfo(lap, position);
+            
+            angle = car.rotation.y - Math.PI;
+
             // let's start the soundtrack of the Luigi's Circuit
             const luigiSound = new BABYLON.Sound("luigiSound", "sounds/mk64_luigicircuit.mp3", scene, function(){
                 luigiSound.play();
@@ -271,8 +298,15 @@
             var impedance = 0.0;
             
             scene.registerBeforeRender(function () {
-                car.position.z += 0.5 - impedance;
+                car.position.z += (0.5 - impedance) * Math.cos(angle);
+                car.position.x += (0.5 - impedance) * Math.sin(angle);
+                angle = car.rotation.y - Math.PI;
             });
+            console.log(car.position);
+            if (car.position == BABYLON.Vector3(-1.5, 0.7, 5)) {
+                lap += 1;
+                updateInfo(lap, position);
+            }
 
             scene.onKeyboardObservable.add((kbInfo) => {
                 switch (kbInfo.type) {
@@ -280,22 +314,23 @@
                         switch (kbInfo.event.key) {
                             case "a":
                             case "A":
-                                car.rotation.y -= Math.PI / 6;
+                                car.rotation.y -= Math.PI / 12;
                                 impedance = setImpedance(car);
                             break
                             case "d":
                             case "D":
-                                car.rotation.y += Math.PI / 6;
+                                car.rotation.y += Math.PI / 12;
                                 impedance = setImpedance(car);
                             break
                             case "w":
                             case "W":
-                                car.position.z += 1;
-
+                                car.position.z += 1 * Math.cos(angle);
+                                car.position.x += 1 * Math.sin(angle);
                             break
                             case "s":
                             case "S":
-                                car.position.z += 0.1;
+                                car.position.z += 0.1 * Math.cos(angle);
+                                car.position.x += 0.1 * Math.sin(angle);
                             break
                         }
                     break;
