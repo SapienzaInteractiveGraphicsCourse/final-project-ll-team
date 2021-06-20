@@ -38,7 +38,7 @@
 
         // better have some global variables to have them always available
         var car;
-        var groundMat, streetMat, borderMat;
+        var groundMat, streetMat, bleachersMat;
 
         const createScene = () => {
             
@@ -51,20 +51,46 @@
             groundMat = new BABYLON.StandardMaterial("groundMat");
             groundMat.diffuseTexture = new BABYLON.Texture("textures/t_kusa_070712c.png");
             
-            const ground = BABYLON.MeshBuilder.CreateDisc("ground", {radius: 60}, scene);
+            const ground = BABYLON.MeshBuilder.CreateDisc("ground", {radius: 650}, scene);
             ground.rotation.x = Math.PI / 2;
+            ground.position.x = 325;
             ground.position.y = 0.49;
+            ground.position.z = -60;
             ground.material = groundMat;
+
+            // building the environment around the street
+            
+            bleacherMat = new BABYLON.StandardMaterial("bleacherMat");
+            bleacherMat.diffuseTexture = new BABYLON.Texture("textures/lc_kakyutest.1.png");
+            bleacherMat.diffuseTexture.hasAlpha = true;
+            
+            const bleacher = BABYLON.MeshBuilder.CreateBox("bleacher", {width:6, height:6, depth:0.1});
+            bleacher.rotation.y = Math.PI/180 *70;
+            bleacher.position.x = 15;
+            bleacher.position.z = 18;
+            bleacher.position.y = 2.7;
+            bleacher.material = bleacherMat;
+            for (i=1; i<3; i++){
+                other_bleacher = bleacher.clone();
+                other_bleacher.position.z = 18+12*i;
+            }
+            for (i=0; i<3; i++){
+                other_bleacher = bleacher.clone();
+                other_bleacher.position.x = -15;
+                other_bleacher.position.z = 18+12*i;
+                other_bleacher.rotation.y = Math.PI/180 *290;
+            }
 
             // building the street
             streetMat = new BABYLON.StandardMaterial("streetMat");
-            streetMat.diffuseTexture = new BABYLON.Texture("textures/mainROAD_all_mip.png");
+            streetMat.diffuseTexture = new BABYLON.Texture("textures/mainROAD_all_mip_with_border.png");
             streetMat.diffuseTexture.hasAlpha = true;
             
-            const street = BABYLON.MeshBuilder.CreateBox("street", {width:10, height:60, depth:1});
+            const street = BABYLON.MeshBuilder.CreateBox("street", {width:30, height:60, depth:1});
             street.rotation.x = Math.PI / 2;
             street.material = streetMat;
             var pos_z = 60
+            var pos_x = 10;
             for (i=0; i<6; i++){
                 other_street = street.clone()
                 other_street.position.z = pos_z;
@@ -72,27 +98,31 @@
             }
             
             // first curve: we divide it in 4 pieces with an incremental orientation
-            angle = Math.PI / 6;
-            const curve = BABYLON.MeshBuilder.CreateBox("street", {width:10, height:40, depth:1});
+            const curve = BABYLON.MeshBuilder.CreateBox("street", {width:30, height:40, depth:1});
             curve.rotation.x = Math.PI / 2;
-            curve.position.z = pos_z - 10;
-            pos_z += 30;
-            var pos_x = 20 * Math.sin(angle);
+            curve.rotation.y = Math.PI / 9;
+            curve.position.z = pos_z-17;
+            curve.position.x = pos_x-4;
+            pos_z += 14;
+            pos_x += 13;
+            angle = 2*Math.PI / 9;
             curve.material = streetMat;
-            for (i=0; i<3; i++){
+            for (i=0; i<2; i++){
                 other_curve = curve.clone();
                 other_curve.rotation.y = angle;
-                other_curve.position.z = pos_z - 5;
+                other_curve.position.z = pos_z;
                 other_curve.position.x = pos_x;
-                pos_z += 40 * Math.cos(angle) - (10*(i+1)) * Math.cos(angle);
-                if (i == 0) pos_x += 40 * Math.sin(angle) + 10 * Math.sin(angle);
-                else pos_x += 40 * Math.sin(angle);
+                pos_z += 18;//40 * Math.cos(angle) - (10*(i+1)) * Math.cos(angle);
+                pos_x += 28;
+                //if (i == 0) pos_x += 40 * Math.sin(angle) + 10 * Math.sin(angle);
+                //else pos_x += 40 * Math.sin(angle);
                 angle += Math.PI / 6;   
             }
 
             // second 'rettilineo' of other pieces of street
-            pos_z -= 5;
-            for (i=0; i<6; i++){
+            pos_z -= 12;
+            pos_x += 18;
+            for (i=0; i<8; i++){
                 other_street = street.clone()
                 other_street.rotation.y = Math.PI / 2;
                 other_street.position.z = pos_z;
@@ -101,26 +131,30 @@
             }
 
             // second curve: specular of the first one
-            angle = Math.PI / 2 + Math.PI / 6;
             other_curve = curve.clone();
-            other_curve.rotation.y = Math.PI / 2;
-            other_curve.position.x = pos_x - 20;
-            other_curve.position.z = pos_z;    
-            pos_x += 20;
-
-            for (i=0; i<3; i++){
+            other_curve.rotation.z += Math.PI / 2;
+            other_curve.position.z = pos_z-7;
+            other_curve.position.x = pos_x-15;
+            pos_z -= 25;
+            pos_x += 18;
+            angle = 2*Math.PI / 9;
+            for (i=0; i<2; i++){
                 other_curve = curve.clone();
+                other_curve.rotation.z += Math.PI / 2;
                 other_curve.rotation.y = angle;
-                other_curve.position.z = pos_z - 10;
+                other_curve.position.z = pos_z;
                 other_curve.position.x = pos_x;
-                pos_z += 40 * Math.cos(angle) + (10*(i+1)) * Math.cos(angle);
-                pos_x += 40 * Math.sin(angle) - 10 * Math.sin(angle);
-                
+                pos_z -= 28;//40 * Math.cos(angle) - (10*(i+1)) * Math.cos(angle);
+                pos_x += 20;
+                //if (i == 0) pos_x += 40 * Math.sin(angle) + 10 * Math.sin(angle);
+                //else pos_x += 40 * Math.sin(angle);
                 angle += Math.PI / 6;   
             }
 
             // other straight line (greater than the previous one)
-            for (i=0; i<18; i++){
+            pos_z -= 15;
+            pos_x -= 15;
+            for (i=0; i<14; i++){
                 other_street = street.clone()
                 other_street.position.z = pos_z;
                 other_street.position.x = pos_x;
@@ -128,24 +162,29 @@
             }
 
             // third curve
-            angle = Math.PI + Math.PI / 6;
             other_curve = curve.clone();
-            other_curve.position.z = pos_z - 20;
-            other_curve.position.x = pos_x;    
-            pos_z += 20;
-
-            for (i=0; i<3; i++){
+            other_curve.rotation.z += Math.PI;
+            other_curve.position.z = pos_z+14;
+            other_curve.position.x = pos_x-4;
+            pos_z -= 17;
+            pos_x -= 25;
+            angle = 2*Math.PI / 9;
+            for (i=0; i<2; i++){
                 other_curve = curve.clone();
+                other_curve.rotation.z += Math.PI;
                 other_curve.rotation.y = angle;
-                other_curve.position.z = pos_z - 10;
+                other_curve.position.z = pos_z;
                 other_curve.position.x = pos_x;
-                pos_z += 40 * Math.cos(angle) + (10*(i+1)) * Math.cos(angle);
-                pos_x += 40 * Math.sin(angle) - 10 * Math.sin(angle);
-                
+                pos_z -= 23;//40 * Math.cos(angle) - (10*(i+1)) * Math.cos(angle);
+                pos_x -= 30;
+                //if (i == 0) pos_x += 40 * Math.sin(angle) + 10 * Math.sin(angle);
+                //else pos_x += 40 * Math.sin(angle);
                 angle += Math.PI / 6;   
             }
 
             // third straight line
+            pos_z += 15;
+            pos_x -= 15;
             for (i=0; i<8; i++){
                 other_street = street.clone()
                 other_street.rotation.y = Math.PI / 2;
@@ -155,55 +194,52 @@
             }
 
             // forth and last curve
-            angle = 3 * Math.PI / 2 + Math.PI / 6;
             other_curve = curve.clone();
-            other_curve.position.z = pos_z;
-            other_curve.position.x = pos_x - 20;        
-            pos_x -= 20;
-
-            for (i=0; i<3; i++){
+            other_curve.rotation.z -= Math.PI/2;
+            other_curve.position.z = pos_z+6;
+            other_curve.position.x = pos_x+15;
+            pos_z += 23;
+            pos_x -= 15;
+            angle = 2*Math.PI / 9;
+            for (i=0; i<2; i++){
                 other_curve = curve.clone();
+                other_curve.rotation.z -= Math.PI/2;
                 other_curve.rotation.y = angle;
-                other_curve.position.z = pos_z - 10;
+                other_curve.position.z = pos_z;
                 other_curve.position.x = pos_x;
-                pos_z += 40 * Math.cos(angle) + (10*(i+1)) * Math.cos(angle);
-                pos_x += 40 * Math.sin(angle) - 10 * Math.sin(angle);
-                
+                pos_z += 27;//40 * Math.cos(angle) - (10*(i+1)) * Math.cos(angle);
+                pos_x -= 20;
+                //if (i == 0) pos_x += 40 * Math.sin(angle) + 10 * Math.sin(angle);
+                //else pos_x += 40 * Math.sin(angle);
                 angle += Math.PI / 6;   
             }
 
             // forth and last straight line
-            for (i=0; i<11; i++){
+            pos_z += 15;
+            pos_x += 15;
+            for (i=0; i<6; i++){
                 other_street = street.clone()
                 other_street.rotation.y = Math.PI;
                 other_street.position.z = pos_z;
                 other_street.position.x = pos_x;
                 pos_z += 60;
             }
-
-            // building the environment arounf the street
-            borderMat = new BABYLON.StandardMaterial("borderMat");
-            borderMat.diffuseTexture = new BABYLON.Texture("textures/t_waki_070712a_mip.png");
-            
-            const border = BABYLON.MeshBuilder.CreateBox("border", {width:1, height:60, depth:1});
-            border.rotation.x = Math.PI / 2;
-            border.position.x = -5.5;
-            border.material = borderMat;
-
-            const otherBorder = border.clone();
-            border.rotation.z = Math.PI;
-            otherBorder.position.x = 5.5;
+            // add a last piece to nicely end the circuit
+            other_street = BABYLON.MeshBuilder.CreateBox("street", {width:30, height:74, depth:1});
+            other_street.rotation.x = Math.PI / 2;
+            other_street.material = streetMat;
+            other_street.position.z = pos_z+7;
+            other_street.position.x = pos_x;
 
             BABYLON.SceneLoader.ImportMeshAsync("", "models/", "Buggy.gltf", scene).then((result) => {
                 car = result.meshes[0];
                 car.scaling = new BABYLON.Vector3(0.02, 0.02, -0.02);
+                car.position.x = -5;
                 car.position.y = 0.7;
-                car.position.x = -1.5;
                 car.rotationQuaternion = null;
                 car.rotation.y = Math.PI;
                 // the camera will follow the car with this
                 camera.lockedTarget = car;
-                
             });
 
             // adding sounds
@@ -218,8 +254,8 @@
                 var countTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                 var i = 3; // seconds
                 var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
-                textBlock.color = "white";
-                textBlock.fontSize = 70;
+                textBlock.color = "orange";
+                textBlock.fontSize = 150;
                 textBlock.fontFamily = "impact";
                 
                 countTexture.addControl(textBlock);
@@ -237,26 +273,29 @@
                         textBlock.dispose();
                         countTexture.dispose();
                     }
-                }, 1000);
+                }, 890);
                 
                 const countSound = new BABYLON.Sound("countSound", "sounds/mk64_countdown.wav", scene, function(){
                     countSound.play();
                 });
                 
                 countSound.onended = function(){
-                    startRace(car, streetMat);
+                    startRace(car);
                 }
             };
-        
             return scene;
         };
 
+        // if the car is out of the street I will have more friction
         function setImpedance(car) {
-            impedance = 0.0
+            console.log(car.position);
+            impedance = 0.0;
             
-            if (car.position.x > 5.5) impedance = 0.25;
-            else if (car.position.x < -5.5) impedance = 0.25;
-            else impedance = 0.0;
+            if ((car.position.z > -540 && car.position.z < 471 && car.position.x > -13 && car.position.x < 634)&&
+                 !(car.position.z > -513 && car.position.z < 444 && car.position.x > 13.5 && car.position.x < 607))
+                impedance = 0.0;
+            else
+                impedance = 0.25;
 
             return impedance;
         }
@@ -265,48 +304,89 @@
             var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
             let x = new BABYLON.GUI.TextBlock('TextBlock', '120'); 
-
+            x.fontSize = 60;
+            x.fontFamily = "impact";
+            x.color = "yellow";
             var rect1 = new BABYLON.GUI.Rectangle();
             rect1.width = 0.25;
-            rect1.horizontalAlignment = 0;
+            rect1.horizontalAlignment = 1;
             rect1.verticalAlignment = 0;
-            rect1.height = "40px";
+            rect1.height = "150px";
             rect1.cornerRadius = 10;
             rect1.color = "black";
             rect1.thickness = 4;
             rect1.background = "grey";
             advancedTexture.addControl(rect1);
             rect1.addControl(x);
-            x.text = 'Lap:' + String(lap) + ', Position:' + String(position);
+
+            x.text = 'Lap ' + String(lap) + '/3' + '\n Position: ' + String(position);
         }
 
         var lap = 1;
         var position = 1;
 
-        function startRace(car, streetMat) {
-            
+        function startRace(car) {
             updateInfo(lap, position);
-            
             angle = car.rotation.y - Math.PI;
 
             // let's start the soundtrack of the Luigi's Circuit
-            const luigiSound = new BABYLON.Sound("luigiSound", "sounds/mk64_luigicircuit.mp3", scene, function(){
-                luigiSound.play();
+            const luigiSound = new BABYLON.Sound("luigiSound", "sounds/mk64_luigicircuit.mp3", scene, null, {
+                loop: true,
+                autoplay: true 
             });
 
-            // if the car is out of the street I will have more friction
             var impedance = 0.0;
-            
+
+            // You must arrive to half lap to increase lap when you arrive to the finish line
+            // To ensure that the user actually follows the track
+            var half_lap = false;
+            console.log(half_lap);
             scene.registerBeforeRender(function () {
-                car.position.z += (0.5 - impedance) * Math.cos(angle);
-                car.position.x += (0.5 - impedance) * Math.sin(angle);
-                angle = car.rotation.y - Math.PI;
+                if(lap <= 3){
+                    car.position.z += (0.4 - impedance) * Math.cos(angle);
+                    car.position.x += (0.4 - impedance) * Math.sin(angle);
+                    angle = car.rotation.y - Math.PI;
+                    
+                    if (car.position.z <37 && car.position.z >33 && car.position.x <640 && car.position.x >600){
+                        half_lap = true;
+                        console.log(half_lap);
+                    }
+                    if(half_lap && car.position.x <14 && car.position.x >-14 && car.position.z <3 && car.position.z >0){
+                        if(lap <=2){
+                            var lapTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                            var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
+                            textBlock.color = "orange";
+                            textBlock.fontSize = 150;
+                            textBlock.fontFamily = "impact";
+                            lapTexture.addControl(textBlock);
+                            textBlock.text = "LAP " + String(lap) + " FINISHED!";
+                            var handle = window.setInterval(() => {
+                                window.clearInterval(handle);
+                                textBlock.dispose();
+                                lapTexture.dispose();
+                            }, 1000);
+                            updateInfo(lap+1, position);
+                        }
+                        lap += 1;
+                        half_lap = false;
+                    }
+                }
+                else{
+                    var finishTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                    var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
+                    textBlock.color = "orange";
+                    textBlock.fontSize = 200;
+                    textBlock.fontFamily = "impact";
+                    
+                    finishTexture.addControl(textBlock);
+                    textBlock.text = "FINISH!";
+                    var handle = window.setInterval(() => {
+                        window.clearInterval(handle);
+                        textBlock.dispose();
+                        finishTexture.dispose();
+                    }, 1000);
+                }
             });
-            console.log(car.position);
-            if (car.position == BABYLON.Vector3(-1.5, 0.7, 5)) {
-                lap += 1;
-                updateInfo(lap, position);
-            }
 
             scene.onKeyboardObservable.add((kbInfo) => {
                 switch (kbInfo.type) {
@@ -326,11 +406,14 @@
                             case "W":
                                 car.position.z += 1 * Math.cos(angle);
                                 car.position.x += 1 * Math.sin(angle);
+                                impedance = setImpedance(car);
                             break
                             case "s":
                             case "S":
-                                car.position.z += 0.1 * Math.cos(angle);
-                                car.position.x += 0.1 * Math.sin(angle);
+                                car.position.z -= 0.5 * Math.cos(angle);
+                                car.position.x -= 0.5 * Math.sin(angle);
+                                impedance = setImpedance(car);
+
                             break
                         }
                     break;
