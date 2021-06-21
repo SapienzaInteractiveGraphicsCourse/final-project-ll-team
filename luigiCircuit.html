@@ -37,8 +37,8 @@
         const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
         // better have some global variables to have them always available
-        var car;
-        var itemBoxPos = [];
+        var car, item;
+        var itemBoxPos = [], itemBoxes = [];
         var groundMat, streetMat, bleachersMat;
 
         const createScene = () => {
@@ -113,10 +113,8 @@
                 other_curve.rotation.y = angle;
                 other_curve.position.z = pos_z;
                 other_curve.position.x = pos_x;
-                pos_z += 18;//40 * Math.cos(angle) - (10*(i+1)) * Math.cos(angle);
+                pos_z += 18;
                 pos_x += 28;
-                //if (i == 0) pos_x += 40 * Math.sin(angle) + 10 * Math.sin(angle);
-                //else pos_x += 40 * Math.sin(angle);
                 angle += Math.PI / 6;   
             }
 
@@ -145,10 +143,8 @@
                 other_curve.rotation.y = angle;
                 other_curve.position.z = pos_z;
                 other_curve.position.x = pos_x;
-                pos_z -= 28;//40 * Math.cos(angle) - (10*(i+1)) * Math.cos(angle);
+                pos_z -= 28;
                 pos_x += 20;
-                //if (i == 0) pos_x += 40 * Math.sin(angle) + 10 * Math.sin(angle);
-                //else pos_x += 40 * Math.sin(angle);
                 angle += Math.PI / 6;   
             }
 
@@ -176,10 +172,8 @@
                 other_curve.rotation.y = angle;
                 other_curve.position.z = pos_z;
                 other_curve.position.x = pos_x;
-                pos_z -= 23;//40 * Math.cos(angle) - (10*(i+1)) * Math.cos(angle);
+                pos_z -= 23;
                 pos_x -= 30;
-                //if (i == 0) pos_x += 40 * Math.sin(angle) + 10 * Math.sin(angle);
-                //else pos_x += 40 * Math.sin(angle);
                 angle += Math.PI / 6;   
             }
 
@@ -244,8 +238,7 @@
             });
 
             createItemBoxLine(scene, [-7, 1, 80]);
-
-            //createItem(scene, car, 'banana');
+            
 
             // adding sounds
             const soundStart = new BABYLON.Sound("soundStart", "sounds/mk64_racestart.wav", scene, function(){
@@ -285,7 +278,7 @@
                 });
                 
                 countSound.onended = function(){
-                    //startRace(car);
+                    startRace(car);
                 }
             };
             return scene;
@@ -294,7 +287,7 @@
         // this fn creates a set of four aligned item boxes
         function createItemBoxLine(scene, starting_pos){
             BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart_item_box/", "scene.gltf", scene).then((result) => {
-                const itemBox = result.meshes[0];
+                itemBox = result.meshes[0];
                 itemBox.scaling = new BABYLON.Vector3(0.05, 0.05, 0.05);
                 itemBox.position.z = starting_pos[2];
                 itemBox.position.y = starting_pos[1];
@@ -302,40 +295,50 @@
                 itemBox.rotationQuaternion = null;  
 
                 itemBoxPos.push([itemBox.position.x, itemBox.position.y, itemBox.position.z]);
+                itemBoxes.push(itemBox);
 
-                for (i=1; i<4; i++){
-                    var otherBox = itemBox.clone();
-                    otherBox.position.x = itemBox.position.x + 4.5*i;    
-                    
-                    itemBoxPos.push([otherBox.position.x, otherBox.position.y, otherBox.position.z]);
-                }
+                otherBox1 = itemBox.clone();
+                otherBox2 = itemBox.clone();
+                otherBox3 = itemBox.clone();
+
+                otherBox1.position.x = itemBox.position.x + 4.5;
+                otherBox2.position.x = itemBox.position.x + 9;
+                otherBox3.position.x = itemBox.position.x + 13.5;
+                
+                itemBoxPos.push([otherBox1.position.x, otherBox1.position.y, otherBox1.position.z]);
+                itemBoxPos.push([otherBox2.position.x, otherBox2.position.y, otherBox2.position.z]);
+                itemBoxPos.push([otherBox3.position.x, otherBox3.position.y, otherBox3.position.z]);
+
+                itemBoxes.push(otherBox1);
+                itemBoxes.push(otherBox2);
+                itemBoxes.push(otherBox3);
             });
         }
 
         // before use/throw the object we have it 'attached' to the car
-        function createItem(scene, car, item){
-            var item;
-            if (item == 'banana'){
+        function createItem(item_name){
+            if (item_name == 'banana'){
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/banana_peel_mario_kart/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.002, 0.002, 0.002);
-                    item.position.y = 0.9;
+                    item.position.y = 2.9;
+                    item.position.z = car.position.z;
+                    item.position.x = car.position.x;
                 });
             }
-            else if (item == 'red_shell'){
+            else if (item_name == 'red_shell'){
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/red_shell/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.15, 0.15, 0.15);
-                    item.position.y = 0.9;
+                    item.position.y = 2.9;
+                    item.position.z = car.position.z;
+                    item.position.x = car.position.x;
                 });
             }
-            
-            item.position.z = car.position.z-2;
         }
 
         // if the car is out of the street I will have more friction
         function setImpedance(car) {
-            console.log(car.position);
             impedance = 0.0;
             
             if ((car.position.z > -540 && car.position.z < 471 && car.position.x > -13 && car.position.x < 634)&&
@@ -387,17 +390,33 @@
             // You must arrive to half lap to increase lap when you arrive to the finish line
             // To ensure that the user actually follows the track
             var half_lap = false;
-            console.log(half_lap);
             scene.registerBeforeRender(function () {
+                for (i=0; i<itemBoxPos.length; i++){
+                    if(car.position.x < itemBoxPos[i][0]+0.8 && car.position.x > itemBoxPos[i][0]-0.8 && car.position.z < itemBoxPos[i][2]+0.8 && car.position.z > itemBoxPos[i][2]-0.8){
+                        if(item)
+                            item.position.y = 0.95;
+                        if(Math.random()>0.5)
+                            createItem('red_shell');
+                        else
+                            createItem('banana');
+                        itemBoxes[i].dispose();
+                        itemBoxes.splice(i, 1);
+                        itemBoxPos.splice(i, 1);
+                        break;
+                    }
+                }
+                impedance = setImpedance(car);
                 if(lap <= 3){
                     car.position.z += (0.4 - impedance) * Math.cos(angle);
                     car.position.x += (0.4 - impedance) * Math.sin(angle);
+                    if(item){
+                        item.position.z += (0.4 - impedance) * Math.cos(angle);
+                        item.position.x += (0.4 - impedance) * Math.sin(angle);
+                    }
                     angle = car.rotation.y - Math.PI;
                     
-                    if (car.position.z <37 && car.position.z >33 && car.position.x <640 && car.position.x >600){
+                    if (car.position.z <37 && car.position.z >33 && car.position.x <640 && car.position.x >600)
                         half_lap = true;
-                        console.log(half_lap);
-                    }
                     if(half_lap && car.position.x <14 && car.position.x >-14 && car.position.z <3 && car.position.z >0){
                         if(lap <=2){
                             var lapTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -442,25 +461,24 @@
                             case "a":
                             case "A":
                                 car.rotation.y -= Math.PI / 12;
-                                impedance = setImpedance(car);
                             break
                             case "d":
                             case "D":
                                 car.rotation.y += Math.PI / 12;
-                                impedance = setImpedance(car);
                             break
                             case "w":
                             case "W":
                                 car.position.z += 1 * Math.cos(angle);
                                 car.position.x += 1 * Math.sin(angle);
-                                impedance = setImpedance(car);
+                                item.position.z += 1 * Math.cos(angle);
+                                item.position.x += 1 * Math.sin(angle);
                             break
                             case "s":
                             case "S":
                                 car.position.z -= 0.5 * Math.cos(angle);
                                 car.position.x -= 0.5 * Math.sin(angle);
-                                impedance = setImpedance(car);
-
+                                item.position.z -= 0.5 * Math.cos(angle);
+                                item.position.x -= 0.5 * Math.sin(angle);
                             break
                         }
                     break;
