@@ -38,6 +38,7 @@
 
         // better have some global variables to have them always available
         var car;
+        var itemBoxPos = [];
         var groundMat, streetMat, bleachersMat;
 
         const createScene = () => {
@@ -218,7 +219,7 @@
             pos_z += 15;
             pos_x += 15;
             for (i=0; i<6; i++){
-                other_street = street.clone()
+                other_street = street.clone();
                 other_street.rotation.y = Math.PI;
                 other_street.position.z = pos_z;
                 other_street.position.x = pos_x;
@@ -241,6 +242,10 @@
                 // the camera will follow the car with this
                 camera.lockedTarget = car;
             });
+
+            createItemBoxLine(scene, [-7, 1, 80]);
+
+            //createItem(scene, car, 'banana');
 
             // adding sounds
             const soundStart = new BABYLON.Sound("soundStart", "sounds/mk64_racestart.wav", scene, function(){
@@ -280,11 +285,53 @@
                 });
                 
                 countSound.onended = function(){
-                    startRace(car);
+                    //startRace(car);
                 }
             };
             return scene;
         };
+
+        // this fn creates a set of four aligned item boxes
+        function createItemBoxLine(scene, starting_pos){
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart_item_box/", "scene.gltf", scene).then((result) => {
+                const itemBox = result.meshes[0];
+                itemBox.scaling = new BABYLON.Vector3(0.05, 0.05, 0.05);
+                itemBox.position.z = starting_pos[2];
+                itemBox.position.y = starting_pos[1];
+                itemBox.position.x = starting_pos[0];
+                itemBox.rotationQuaternion = null;  
+
+                itemBoxPos.push([itemBox.position.x, itemBox.position.y, itemBox.position.z]);
+
+                for (i=1; i<4; i++){
+                    var otherBox = itemBox.clone();
+                    otherBox.position.x = itemBox.position.x + 4.5*i;    
+                    
+                    itemBoxPos.push([otherBox.position.x, otherBox.position.y, otherBox.position.z]);
+                }
+            });
+        }
+
+        // before use/throw the object we have it 'attached' to the car
+        function createItem(scene, car, item){
+            var item;
+            if (item == 'banana'){
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/banana_peel_mario_kart/", "scene.gltf", scene).then((result) => {
+                    item = result.meshes[0];
+                    item.scaling = new BABYLON.Vector3(0.002, 0.002, 0.002);
+                    item.position.y = 0.9;
+                });
+            }
+            else if (item == 'red_shell'){
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/red_shell/", "scene.gltf", scene).then((result) => {
+                    item = result.meshes[0];
+                    item.scaling = new BABYLON.Vector3(0.15, 0.15, 0.15);
+                    item.position.y = 0.9;
+                });
+            }
+            
+            item.position.z = car.position.z-2;
+        }
 
         // if the car is out of the street I will have more friction
         function setImpedance(car) {
