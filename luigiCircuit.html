@@ -316,8 +316,9 @@
         }
 
         // before use/throw the object we have it 'attached' to the car
-        function createItem(item_name){
-            if (item_name == 'banana'){
+        function createItem(name){
+            if (name == 'banana'){
+                item_name = 'banana';
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/banana_peel_mario_kart/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.002, 0.002, 0.002);
@@ -326,7 +327,8 @@
                     item.position.x = car.position.x;
                 });
             }
-            else if (item_name == 'red_shell'){
+            else if (name == 'red_shell'){
+                item_name = 'red_shell';
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/red_shell/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.15, 0.15, 0.15);
@@ -378,7 +380,6 @@
         function startRace(car) {
             updateInfo(lap, position);
             angle = car.rotation.y - Math.PI;
-
             // let's start the soundtrack of the Luigi's Circuit
             const luigiSound = new BABYLON.Sound("luigiSound", "sounds/mk64_luigicircuit.mp3", scene, null, {
                 loop: true,
@@ -386,7 +387,8 @@
             });
 
             var impedance = 0.0;
-
+            // velocity increment when shell is thrown
+            var throwed = 0;
             // You must arrive to half lap to increase lap when you arrive to the finish line
             // To ensure that the user actually follows the track
             var half_lap = false;
@@ -395,10 +397,14 @@
                     if(car.position.x < itemBoxPos[i][0]+0.8 && car.position.x > itemBoxPos[i][0]-0.8 && car.position.z < itemBoxPos[i][2]+0.8 && car.position.z > itemBoxPos[i][2]-0.8){
                         if(item)
                             item.position.y = 0.95;
-                        if(Math.random()>0.5)
+                        if(Math.random()>0.5){
+                            throwed = 0;
                             createItem('red_shell');
-                        else
+                        }
+                        else{
+                            throwed = 0;
                             createItem('banana');
+                        }
                         itemBoxes[i].dispose();
                         itemBoxes.splice(i, 1);
                         itemBoxPos.splice(i, 1);
@@ -410,8 +416,16 @@
                     car.position.z += (0.4 - impedance) * Math.cos(angle);
                     car.position.x += (0.4 - impedance) * Math.sin(angle);
                     if(item){
-                        item.position.z += (0.4 - impedance) * Math.cos(angle);
-                        item.position.x += (0.4 - impedance) * Math.sin(angle);
+                        if(throwed == 0){
+                            item.position.z += (0.4 + throwed - impedance) * Math.cos(angle);
+                            item.position.x += (0.4 + throwed - impedance) * Math.sin(angle);
+                            // saved to throw shell in the right direction
+                            last_angle = angle;
+                        }
+                        else{
+                            item.position.z += (0.4 + throwed - impedance)* Math.cos(last_angle);
+                            item.position.x += (0.4 + throwed - impedance)* Math.sin(last_angle);
+                        }
                     }
                     angle = car.rotation.y - Math.PI;
                     
@@ -470,15 +484,30 @@
                             case "W":
                                 car.position.z += 1 * Math.cos(angle);
                                 car.position.x += 1 * Math.sin(angle);
-                                item.position.z += 1 * Math.cos(angle);
-                                item.position.x += 1 * Math.sin(angle);
+                                if(item && throwed == 0){
+                                    item.position.z += 1 * Math.cos(angle);
+                                    item.position.x += 1 * Math.sin(angle);
+                                }
                             break
                             case "s":
                             case "S":
                                 car.position.z -= 0.5 * Math.cos(angle);
                                 car.position.x -= 0.5 * Math.sin(angle);
-                                item.position.z -= 0.5 * Math.cos(angle);
-                                item.position.x -= 0.5 * Math.sin(angle);
+                                if(item && throwed == 0){
+                                    item.position.z -= 0.5 * Math.cos(angle);
+                                    item.position.x -= 0.5 * Math.sin(angle);
+                                }
+                            break
+                            case "e":
+                            case "E":
+                                if(this.item_name == 'banana'){
+                                    item.position.y = 0.95;
+                                    item = null;
+                                }
+                                else if (this.item_name == 'red_shell'){
+                                    item.position.y = 0.95;
+                                    throwed = 0.6;
+                                }
                             break
                         }
                     break;
