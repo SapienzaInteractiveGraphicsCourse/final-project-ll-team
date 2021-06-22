@@ -2,6 +2,10 @@
 
 This is the repository of the final project of the Interactive Graphics course.
 
+The proposed word is a personal re-implementation of the famouse racing game [Mario Kart](https://it.wikipedia.org/wiki/Mario_Kart) produced by [Nintendo](https://www.nintendo.com/). The adopted library is [BabylonJS](https://www.babylonjs.com/) (version 4.2).
+
+Please, refer to the *Game Link* section below to play and interact with the game.
+
 ## Authors
 
 Lorenzo Nicoletti - 1797464
