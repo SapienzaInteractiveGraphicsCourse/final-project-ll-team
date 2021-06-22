@@ -38,7 +38,12 @@
 
         // better have some global variables to have them always available
         var car, item;
+        // arrays for the item boxes
         var itemBoxPos = [], itemBoxes = [];
+        // arrays for 'negative' items
+        var lethalItemPos = [], lethalItems = [];
+        // arrays for 'positive' items
+        var goodItemPos = [], goodItems = [];
         var groundMat, streetMat, bleachersMat;
 
         const createScene = () => {
@@ -289,8 +294,18 @@
                 camera.lockedTarget = car;
             });
 
-            createItemBoxLine(scene, [-7, 1, 80]);
-            
+            createItemBoxLine(scene, [-7, 1, 120], true);
+            createItemBoxLine(scene, [-7, 1, 350], true);
+            createItemBoxLine(scene, [250, 1, 450], false);
+            createItemBoxLine(scene, [500, 1, 450], false);
+            createItemBoxLine(scene, [615, 1, 350], true);
+            createItemBoxLine(scene, [615, 1, 0], true);
+            createItemBoxLine(scene, [615, 1, -350], true);
+            createItemBoxLine(scene, [500, 1, -535], false);
+            createItemBoxLine(scene, [250, 1, -535], false);
+            createItemBoxLine(scene, [-7, 1, -250], true);
+
+
 
             // adding sounds
             const soundStart = new BABYLON.Sound("soundStart", "sounds/mk64_racestart.wav", scene, function(){
@@ -336,8 +351,8 @@
             return scene;
         };
 
-        // this fn creates a set of four aligned item boxes
-        function createItemBoxLine(scene, starting_pos){
+        // this fn creates a set of four aligned (along x- or z-axis) item boxes
+        function createItemBoxLine(scene, starting_pos, alignedX){
             BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart_item_box/", "scene.gltf", scene).then((result) => {
                 itemBox = result.meshes[0];
                 itemBox.scaling = new BABYLON.Vector3(0.05, 0.05, 0.05);
@@ -353,10 +368,16 @@
                 otherBox2 = itemBox.clone();
                 otherBox3 = itemBox.clone();
 
-                otherBox1.position.x = itemBox.position.x + 4.5;
-                otherBox2.position.x = itemBox.position.x + 9;
-                otherBox3.position.x = itemBox.position.x + 13.5;
-                
+                if (alignedX){
+                    otherBox1.position.x = itemBox.position.x + 4.5;
+                    otherBox2.position.x = itemBox.position.x + 9;
+                    otherBox3.position.x = itemBox.position.x + 13.5;
+                }
+                else{
+                    otherBox1.position.z = itemBox.position.z + 4.5;
+                    otherBox2.position.z = itemBox.position.z + 9;
+                    otherBox3.position.z = itemBox.position.z + 13.5;
+                }    
                 itemBoxPos.push([otherBox1.position.x, otherBox1.position.y, otherBox1.position.z]);
                 itemBoxPos.push([otherBox2.position.x, otherBox2.position.y, otherBox2.position.z]);
                 itemBoxPos.push([otherBox3.position.x, otherBox3.position.y, otherBox3.position.z]);
@@ -367,9 +388,41 @@
             });
         }
 
+        // we need to distinguish a positive and a negative item
+        var positiveItem = false;
+
         // before use/throw the object we have it 'attached' to the car
         function createItem(name){
+            var previous_item = item;
             if (name == 'banana'){
+                if (previous_item){
+                    posx = previous_item.position.x;
+                    posy = previous_item.position.y;
+                    posz = previous_item.position.z;
+                    if (positiveItem){
+                        goodItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            goodItemPos.push([posx, posy, posz])
+                            
+                        }, 1000);
+
+                    }
+                    else {        
+                        lethalItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            lethalItemPos.push([posx, posy, posz])
+                            
+                        }, 1000);
+                    }
+                }
                 item_name = 'banana';
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/banana_peel_mario_kart/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
@@ -377,9 +430,40 @@
                     item.position.y = 2.9;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
+                    positiveItem = false;
                 });
             }
             else if (name == 'red_shell'){
+                if (previous_item){
+                    posx = previous_item.position.x;
+                    posy = previous_item.position.y;
+                    posz = previous_item.position.z;                  
+                    lethalItems.push(previous_item);
+
+                    if (positiveItem){
+                        goodItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            goodItemPos.push([posx, posy, posz])
+                            
+                        }, 1000);
+
+                    }
+                    else {        
+                        lethalItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            lethalItemPos.push([posx, posy, posz])
+                            
+                        }, 1000);
+                    }
+                }
                 item_name = 'red_shell';
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/red_shell/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
@@ -387,7 +471,95 @@
                     item.position.y = 2.9;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
+                    positiveItem = false;
                 });
+            }
+            else if (name == 'mushroom'){
+                if (previous_item){
+                    posx = previous_item.position.x;
+                    posy = previous_item.position.y;
+                    posz = previous_item.position.z;                  
+                    lethalItems.push(previous_item);
+
+                    if (positiveItem){
+                        goodItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            goodItemPos.push([posx, posy, posz])
+                            
+                        }, 1000);
+
+                    }
+                    else {        
+                        lethalItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            lethalItemPos.push([posx, posy, posz])
+                            
+                        }, 1000);
+                    } 
+                }
+                item_name = 'mushroom';
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/mushroom_mario/", "scene.gltf", scene).then((result) => {
+                    item = result.meshes[0];
+                    item.scaling = new BABYLON.Vector3(1.25, 1.25, 1.25);
+                    item.position.y = 2.9;
+                    item.position.z = car.position.z;
+                    item.position.x = car.position.x;
+                    positiveItem = true;
+                });
+            }
+            else if (name == 'green_shell'){
+                if (previous_item){
+                    posx = previous_item.position.x;
+                    posy = previous_item.position.y;
+                    posz = previous_item.position.z;                  
+                    lethalItems.push(previous_item);
+
+                    if (positiveItem){
+                        goodItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            goodItemPos.push([posx, posy, posz])
+                            
+                        }, 1000);
+
+                    }
+                    else {        
+                        lethalItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            lethalItemPos.push([posx, posy, posz])
+                            
+                        }, 1000);
+                    } 
+                }
+                item_name = 'green_shell';
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/koopa_troopa_shell_super_mario_bros/", "scene.gltf", scene).then((result) => {
+                    item = result.meshes[0];
+                    item.scaling = new BABYLON.Vector3(0.005, 0.005, 0.005);
+                    item.position.y = 2.9;
+                    item.position.z = car.position.z;
+                    item.position.x = car.position.x;
+                    item.rotationQuaternion = null;
+                    item.rotation.y = Math.PI / 2;
+                    positiveItem = false;
+                });
+            }
+            else {
+                console.log("Unsopperted item to be created! Please, debug.")
             }
         }
 
@@ -439,45 +611,136 @@
             });
 
             var impedance = 0.0;
-            // velocity increment when shell is thrown
+            // velocity increment when shell is thrown ...
             var throwed = 0;
+            // ... but also when a mushroom is used
+            var sprint = 0;
             // You must arrive to half lap to increase lap when you arrive to the finish line
             // To ensure that the user actually follows the track
             var half_lap = false;
             scene.registerBeforeRender(function () {
+                impedance = setImpedance(car);
+
                 for (i=0; i<itemBoxPos.length; i++){
                     if(car.position.x < itemBoxPos[i][0]+0.8 && car.position.x > itemBoxPos[i][0]-0.8 && car.position.z < itemBoxPos[i][2]+0.8 && car.position.z > itemBoxPos[i][2]-0.8){
                         if(item)
                             item.position.y = 0.95;
-                        if(Math.random()>0.5){
+
+                        // we have four items randomly chosen
+                        if(Math.random()<0.25){
                             throwed = 0;
                             createItem('red_shell');
                         }
-                        else{
+                        else if(Math.random()<0.5){
                             throwed = 0;
                             createItem('banana');
                         }
+                        else if(Math.random()<0.75){
+                            throwed = 0;
+                            createItem('mushroom');
+                        }
+                        else{
+                            throwed = 0;
+                            createItem('green_shell');
+                        }
+                        
+                        // removing the 'hitten' item box from the arrays of item boxes
                         itemBoxes[i].dispose();
                         itemBoxes.splice(i, 1);
                         itemBoxPos.splice(i, 1);
                         break;
                     }
                 }
-                impedance = setImpedance(car);
+
+                // the car passes over a lethal item, it will do a spin (testacoda)
+                for (i=0; i<lethalItemPos.length; i++){
+                    if(car.position.x < lethalItemPos[i][0]+0.8 && car.position.x > lethalItemPos[i][0]-0.8 && car.position.z < lethalItemPos[i][2]+0.8 && car.position.z > lethalItemPos[i][2]-0.8){
+                        
+                        /* the spin is realized with a combination of three animations:
+                         * - carRotation: 'actual' spin
+                         * - carStopx: necessary to do not move the car along the x-axis
+                         * - carStopz: necessary to do not move the car along the z-axis
+                         * without these last two, the car will proceed in its motion
+                        */
+                       // every animation is composed by key frames
+                        var carRotation = new BABYLON.Animation("carRotation", "rotation.y", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                        const keyFramesRot = []; 
+                        
+                        var carStopx = new BABYLON.Animation("carStopx", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                        var carStopz = new BABYLON.Animation("carStopx", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                        const keyFramesPosx = [];
+                        const keyFramesPosz = [];
+
+                        const initial_rot = car.rotation.y;
+                        const initial_posx = car.position.x;
+                        const initial_posz = car.position.z;
+                        
+                        var spin = Math.PI;
+                        for (j=0; j<5; j++){
+                            keyFramesRot.push({
+                                frame: 5*j,
+                                value: initial_rot + spin
+                            });
+                            spin += Math.PI;
+
+                            keyFramesPosx.push({
+                                frame: 5*j,
+                                value: initial_posx
+                            });
+                            keyFramesPosz.push({
+                                frame: 5*j,
+                                value: initial_posz
+                            });
+                        }
+                        keyFramesRot.push({
+                            frame: 30,
+                            value: initial_rot
+                        })
+                    
+                        carRotation.setKeys(keyFramesRot);
+                        carStopx.setKeys(keyFramesPosx);
+                        carStopz.setKeys(keyFramesPosz);
+
+                        scene.beginDirectAnimation(car, [carRotation, carStopx, carStopz], 0, 60, false);
+                        
+                        lethalItems[i].dispose();
+                        lethalItems.splice(i, 1);
+                        lethalItemPos.splice(i, 1);
+
+                        break;
+                    }
+                }
+
+                // the car passes over a positive item (aka a mushroom), it will accelerate
+                for (i=0; i<goodItemPos.length; i++){
+                    if(car.position.x < goodItemPos[i][0]+0.8 && car.position.x > goodItemPos[i][0]-0.8 && car.position.z < goodItemPos[i][2]+0.8 && car.position.z > goodItemPos[i][2]-0.8){
+                        sprint = 1;
+                        
+                        goodItems[i].dispose();
+                        goodItems.splice(i, 1);
+                        goodItemPos.splice(i, 1);
+
+                        break;
+                    }
+                }
+
                 if(lap <= 3){
-                    car.position.z += (0.4 - impedance) * Math.cos(angle);
-                    car.position.x += (0.4 - impedance) * Math.sin(angle);
+                    car.position.z += (0.4 + sprint - impedance) * Math.cos(angle);
+                    car.position.x += (0.4 + sprint - impedance) * Math.sin(angle);
+                    // trick to gradually reduce the sprint of a mushroom
+                    if (sprint > 0) sprint -= 0.002;
                     if(item){
                         if(throwed == 0){
-                            item.position.z += (0.4 + throwed - impedance) * Math.cos(angle);
-                            item.position.x += (0.4 + throwed - impedance) * Math.sin(angle);
+                            item.position.z += (0.4 + throwed + sprint - impedance) * Math.cos(angle);
+                            item.position.x += (0.4 + throwed + sprint - impedance) * Math.sin(angle);
                             // saved to throw shell in the right direction
                             last_angle = angle;
                         }
                         else{
-                            item.position.z += (0.4 + throwed - impedance)* Math.cos(last_angle);
-                            item.position.x += (0.4 + throwed - impedance)* Math.sin(last_angle);
+                            item.position.z += (0.4 + throwed + sprint - impedance) * Math.cos(last_angle);
+                            item.position.x += (0.4 + throwed + sprint - impedance) * Math.sin(last_angle);
                         }
+                                      
                     }
                     angle = car.rotation.y - Math.PI;
                     
@@ -552,13 +815,37 @@
                             break
                             case "e":
                             case "E":
-                                if(this.item_name == 'banana'){
-                                    item.position.y = 0.95;
-                                    item = null;
-                                }
-                                else if (this.item_name == 'red_shell'){
-                                    item.position.y = 0.95;
-                                    throwed = 0.6;
+                                if (item){
+                                    if(this.item_name == 'banana'){
+                                        item.position.y = 0.95;
+                                        posx = item.position.x;
+                                        posy = item.position.y;
+                                        posz = item.position.z;                  
+                                        lethalItems.push(item);
+                                        item = null;
+                                        
+                                        // this makes the item handling works: if we leave an item because we
+                                        // hit another item box, we can set this interval to move far away from
+                                        // the item and to not be hitten by it
+                                        setTimeout(function(){
+                                            lethalItemPos.push([posx, posy, posz])
+                                            
+                                        }, 1000);
+
+                                    }
+                                    else if (this.item_name == 'red_shell'){
+                                        item.position.y = 0.95;
+                                        throwed = 0.6;
+                                    }
+                                    else if (this.item_name == 'green_shell'){
+                                        item.position.y = 0.95;
+                                        throwed = 0.6;
+                                    }
+                                    else if (this.item_name == 'mushroom'){
+                                        sprint = 1;
+                                        item.dispose();
+                                        item = null;
+                                    }
                                 }
                             break
                         }

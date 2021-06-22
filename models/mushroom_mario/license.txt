@@ -1,0 +1,11 @@
+Model Information:
+* title:	Mushroom Mario
+* source:	https://sketchfab.com/3d-models/mushroom-mario-b186c12c97c447ec85cacd6f02918f59
+* author:	Federico.Salvatierra (https://sketchfab.com/Federico.Salvatierra)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Mushroom Mario" (https://sketchfab.com/3d-models/mushroom-mario-b186c12c97c447ec85cacd6f02918f59) by Federico.Salvatierra (https://sketchfab.com/Federico.Salvatierra) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
