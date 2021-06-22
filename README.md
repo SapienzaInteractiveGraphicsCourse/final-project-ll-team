@@ -8,4 +8,6 @@ Lorenzo Nicoletti - 1797464
 
 Leandro Maglianella - 1792507
 
+## Game Link
 
+[Click here to play the game](https://sapienzainteractivegraphicscourse.github.io/final-project-ll-team/)
