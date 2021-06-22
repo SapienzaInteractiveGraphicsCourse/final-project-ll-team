@@ -61,15 +61,67 @@
 
             // building the environment around the street
             
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart_finish_line/", "scene.gltf", scene).then((result) => {
+                finish = result.meshes[0];
+                finish.scaling = new BABYLON.Vector3(-1.1, 0.8, 0.9);
+                finish.position.y = -1;
+                finish.position.x = 0;
+                finish.position.z = 30;
+
+                finish.rotation.y = Math.PI;
+                finish.rotationQuaternion = null;
+
+            });
+
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/brick_block_super_mario_bros/", "scene.gltf", scene).then((result) => {
+                brick = result.meshes[0];
+                brick.scaling = new BABYLON.Vector3(0.015, 0.004, 0.002);
+                brick.position.z = -30;
+                brick.position.y = -0.3;
+                brick.position.x = 15;
+                brick.rotation.y = Math.PI/2;
+                brick.rotationQuaternion = null;
+
+                for(i=1; i<10; i++){
+                    other_brick = this.brick.clone()
+                    other_brick.position.z += i*13.1;
+                }
+                for(i=0; i<10; i++){
+                    other_brick = this.brick.clone()
+                    other_brick.position.x = -16;
+                    other_brick.position.z += i*13.1;
+                }
+            });
+
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/piranha_plant_super_mario_bros/", "scene.gltf", scene).then((result) => {
+                plant = result.meshes[0];
+                plant.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
+                plant.position.z = -30;
+                plant.position.y = 3;
+                plant.position.x = 15.5;
+                plant.rotation.y = Math.PI/2;
+                plant.rotationQuaternion = null;
+
+                for(i=1; i<10; i++){
+                    other_plant = this.plant.clone()
+                    other_plant.position.z += i*13.1;
+                }
+                for(i=0; i<10; i++){
+                    other_plant = this.plant.clone()
+                    other_plant.position.x = -16;
+                    other_plant.position.z += i*13.1;
+                }
+            });
+
             bleacherMat = new BABYLON.StandardMaterial("bleacherMat");
             bleacherMat.diffuseTexture = new BABYLON.Texture("textures/lc_kakyutest.1.png");
             bleacherMat.diffuseTexture.hasAlpha = true;
             
             const bleacher = BABYLON.MeshBuilder.CreateBox("bleacher", {width:6, height:6, depth:0.1});
             bleacher.rotation.y = Math.PI/180 *70;
-            bleacher.position.x = 15;
+            bleacher.position.x = 16;
             bleacher.position.z = 18;
-            bleacher.position.y = 2.7;
+            bleacher.position.y = 5.6;
             bleacher.material = bleacherMat;
             for (i=1; i<3; i++){
                 other_bleacher = bleacher.clone();
@@ -77,7 +129,7 @@
             }
             for (i=0; i<3; i++){
                 other_bleacher = bleacher.clone();
-                other_bleacher.position.x = -15;
+                other_bleacher.position.x = -16;
                 other_bleacher.position.z = 18+12*i;
                 other_bleacher.rotation.y = Math.PI/180 *290;
             }
