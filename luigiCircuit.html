@@ -43,6 +43,9 @@
         var lethalItemPos = [], lethalItems = [];
         // arrays for 'positive' items
         var goodItemPos = [], goodItems = [];
+        // arrays for the paths for the computer-controlled cars
+        var points1 = [], points2 = [], points3 = [];
+
         var groundMat, streetMat, bleachersMat;
 
         const createScene = () => {
@@ -414,6 +417,12 @@
                 car1.position.z = 6.67;
                 car1.rotationQuaternion = null;
                 car1.rotation.y = Math.PI;
+
+                points1.push( new BABYLON.Vector3(
+                    car1.position.x,
+                    car1.position.y,
+                    car1.position.z
+                ));
             });
 
             BABYLON.SceneLoader.ImportMeshAsync("", "models/bowserkart/", "scene.gltf", scene).then((result) => {
@@ -424,6 +433,12 @@
                 car2.position.z = 13.37;
                 car2.rotationQuaternion = null;
                 car2.rotation.y = Math.PI;
+
+                points2.push( new BABYLON.Vector3(
+                    car2.position.x,
+                    car2.position.y,
+                    car2.position.z
+                ));
             });
 
             BABYLON.SceneLoader.ImportMeshAsync("", "models/dk_kart/", "scene.gltf", scene).then((result) => {
@@ -434,10 +449,22 @@
                 car3.position.z = 20;
                 car3.rotationQuaternion = null;
                 car3.rotation.y = Math.PI;
+
+                points3.push( new BABYLON.Vector3(
+                    car3.position.x,
+                    car3.position.y,
+                    car3.position.z
+                ));
             });
 
+            // these functions are asynchronous, we need to pay attention in the pushes
             createItemBoxLine(scene, [-7, 1, 120], true);
             createItemBoxLine(scene, [-7, 1, 350], true);
+
+            points1.push(new BABYLON.Vector3(20, 1, 450));
+            points2.push(new BABYLON.Vector3(25, 1, 445));
+            points3.push(new BABYLON.Vector3(30, 1, 440));   
+
             createItemBoxLine(scene, [250, 1, 450], false);
             createItemBoxLine(scene, [500, 1, 450], false);
             createItemBoxLine(scene, [615, 1, 350], true);
@@ -446,6 +473,11 @@
             createItemBoxLine(scene, [500, 1, -535], false);
             createItemBoxLine(scene, [250, 1, -535], false);
             createItemBoxLine(scene, [-7, 1, -250], true);
+
+            points1.push(points1[0]); // push to close path
+            points2.push(points2[0]); // push to close path
+            points3.push(points3[0]); // push to close path
+
 
             // adding sounds
             const soundStart = new BABYLON.Sound("soundStart", "sounds/mk64_racestart.wav", scene, function(){
@@ -525,6 +557,14 @@
                 itemBoxes.push(otherBox1);
                 itemBoxes.push(otherBox2);
                 itemBoxes.push(otherBox3);
+
+                // for the path that the other cars have to follow we can use the position
+                // of the instantiated item boxes as reference points: the cars will pass though
+                // one on the four aligned box in every set above                
+                points1.push(new BABYLON.Vector3(otherBox1.position.x, otherBox1.position.y, otherBox1.position.z));
+                points2.push(new BABYLON.Vector3(otherBox2.position.x, otherBox2.position.y, otherBox2.position.z));
+                points3.push(new BABYLON.Vector3(otherBox3.position.x, otherBox3.position.y, otherBox3.position.z));
+
             });
         }
 
@@ -747,76 +787,82 @@
                 autoplay: true 
             });
 
-            // for the path that the other cars have to follow we can use the position
-            // of the instantiated item boxes as reference points: the cars will pass though
-            // one on the four aligned box in every set above
-            var points1 = [];
-            points1.push( new BABYLON.Vector3(
-                car1.position.x,
-                car1.position.y,
-                car1.position.z
-            ))
+            const animCarX1 = new BABYLON.Animation("canAnimationx1", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ1 = new BABYLON.Animation("canAnimationz1", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
-            for (var j=0; j < itemBoxPos.length; j+=4){
-                points1.push( new BABYLON.Vector3(
-                    itemBoxPos[j + 1][0],
-                    itemBoxPos[j + 1][1],
-                    itemBoxPos[j + 1][2],
-                ));
-        
-            }
+            const animCarX2 = new BABYLON.Animation("canAnimationx2", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ2 = new BABYLON.Animation("canAnimationz2", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+            const animCarX3 = new BABYLON.Animation("canAnimationx3", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ3 = new BABYLON.Animation("canAnimationz3", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+            const carKeysX1 = [];
+            const carKeysZ1 = [];
             
-            points1.push(points1[0]); // push to close path
-            console.log(points1);
+            const carKeysX2 = [];
+            const carKeysZ2 = [];
+
+            const carKeysX3 = [];
+            const carKeysZ3 = [];
+
+            frame = 0;
+            for (j=1; j<points1.length; j++){
+                carKeysX1.push({
+                    frame: frame,
+                    value: points1[j].x
+                });
+                carKeysZ1.push({
+                    frame: frame,
+                    value: points1[j].z
+                });
+
+                carKeysX2.push({
+                    frame: frame,
+                    value: points2[j].x
+                });
+                carKeysZ2.push({
+                    frame: frame,
+                    value: points2[j].z
+                });
+
+                carKeysX3.push({
+                    frame: frame,
+                    value: points3[j].x
+                });
+                carKeysZ3.push({
+                    frame: frame,
+                    value: points3[j].z
+                });
+
+                frame += 150;
+            }
+            animCarX1.setKeys(carKeysX1);
+            animCarZ1.setKeys(carKeysZ1);
+            
+            animCarX2.setKeys(carKeysX2);
+            animCarZ2.setKeys(carKeysZ2);
+
+            animCarX3.setKeys(carKeysX3);
+            animCarZ3.setKeys(carKeysZ3);
+
+            scene.beginDirectAnimation(car1, [animCarX1, animCarZ1], 0, frame, true);
+            scene.beginDirectAnimation(car2, [animCarX2, animCarZ2], 0, frame, true);
+            scene.beginDirectAnimation(car3, [animCarX3, animCarZ3], 0, frame, true);
+
+            
+            // decomment these lines if you want to test the paths of the computer-controlled cars
+            
+            points1[0] = points1[1];
+            points2[0] = points2[1];
+            points3[0] = points3[1];
             
             // Creation of a lines mesh
             var lines1 = BABYLON.MeshBuilder.CreateLines("lines", {points: points1}, scene);
-	
-            var points2 = [];
-            points2.push( new BABYLON.Vector3(
-                car2.position.x,
-                car2.position.y,
-                car2.position.z
-            ))
-
-            for (var j=0; j < itemBoxPos.length; j+=4){
-                points2.push( new BABYLON.Vector3(
-                    itemBoxPos[j + 2][0],
-                    itemBoxPos[j + 2][1],
-                    itemBoxPos[j + 2][2],
-                ));
-        
-            }
-            
-            points2.push(points2[0]); // push to close path
-            console.log(points2);
-            
-            // Creation of a lines mesh
             var lines2 = BABYLON.MeshBuilder.CreateLines("lines", {points: points2}, scene);
             lines2.color = new BABYLON.Color3(1, 0, 0);
-
-            var points3 = [];
-            points3.push( new BABYLON.Vector3(
-                car3.position.x,
-                car3.position.y,
-                car3.position.z
-            ))
-
-            for (var j=0; j < itemBoxPos.length; j+=4){
-                points3.push( new BABYLON.Vector3(
-                    itemBoxPos[j + 3][0],
-                    itemBoxPos[j + 3][1],
-                    itemBoxPos[j + 3][2],
-                ));
-        
-            }
-            
-            points3.push(points3[0]); // push to close path
-            console.log(points3);
-            
-            // Creation of a lines mesh
             var lines3 = BABYLON.MeshBuilder.CreateLines("lines", {points: points3}, scene);
             lines3.color = new BABYLON.Color3(0, 1, 0);
+            
 
             var impedance = 0.0;
             // velocity increment when shell is thrown ...
