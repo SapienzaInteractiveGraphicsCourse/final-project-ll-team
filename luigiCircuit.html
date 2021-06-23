@@ -36,7 +36,7 @@
         const canvas = document.getElementById("renderCanvas"); // Get the canvas element
         const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
         // better have some global variables to have them always available
-        var car, item;
+        var car, car1, car2, car3, item;
         // arrays for the item boxes
         var itemBoxPos = [], itemBoxes = [];
         // arrays for 'negative' items
@@ -395,15 +395,45 @@
             other_street.position.z = pos_z+7;
             other_street.position.x = pos_x;
 
-            BABYLON.SceneLoader.ImportMeshAsync("", "models/", "Buggy.gltf", scene).then((result) => {
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart/", "scene.gltf", scene).then((result) => {
                 car = result.meshes[0];
-                car.scaling = new BABYLON.Vector3(0.02, 0.02, -0.02);
+                car.scaling = new BABYLON.Vector3(2, 2, -2);
                 car.position.x = -5;
                 car.position.y = 0.7;
                 car.rotationQuaternion = null;
                 car.rotation.y = Math.PI;
                 // the camera will follow the car with this
                 camera.lockedTarget = car;
+            });
+
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/toad_kart/", "scene.gltf", scene).then((result) => {
+                car1 = result.meshes[0];
+                car1.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
+                car1.position.x = 5;
+                car1.position.y = 0.7;
+                car1.position.z = 6.67;
+                car1.rotationQuaternion = null;
+                car1.rotation.y = Math.PI;
+            });
+
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/bowserkart/", "scene.gltf", scene).then((result) => {
+                car2 = result.meshes[0];
+                car2.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
+                car2.position.x = -5;
+                car2.position.y = 0.7;
+                car2.position.z = 13.37;
+                car2.rotationQuaternion = null;
+                car2.rotation.y = Math.PI;
+            });
+
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/dk_kart/", "scene.gltf", scene).then((result) => {
+                car3 = result.meshes[0];
+                car3.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
+                car3.position.x = 5;
+                car3.position.y = 0.7;
+                car3.position.z = 20;
+                car3.rotationQuaternion = null;
+                car3.rotation.y = Math.PI;
             });
 
             createItemBoxLine(scene, [-7, 1, 120], true);
@@ -716,6 +746,77 @@
                 loop: true,
                 autoplay: true 
             });
+
+            // for the path that the other cars have to follow we can use the position
+            // of the instantiated item boxes as reference points: the cars will pass though
+            // one on the four aligned box in every set above
+            var points1 = [];
+            points1.push( new BABYLON.Vector3(
+                car1.position.x,
+                car1.position.y,
+                car1.position.z
+            ))
+
+            for (var j=0; j < itemBoxPos.length; j+=4){
+                points1.push( new BABYLON.Vector3(
+                    itemBoxPos[j + 1][0],
+                    itemBoxPos[j + 1][1],
+                    itemBoxPos[j + 1][2],
+                ));
+        
+            }
+            
+            points1.push(points1[0]); // push to close path
+            console.log(points1);
+            
+            // Creation of a lines mesh
+            var lines1 = BABYLON.MeshBuilder.CreateLines("lines", {points: points1}, scene);
+	
+            var points2 = [];
+            points2.push( new BABYLON.Vector3(
+                car2.position.x,
+                car2.position.y,
+                car2.position.z
+            ))
+
+            for (var j=0; j < itemBoxPos.length; j+=4){
+                points2.push( new BABYLON.Vector3(
+                    itemBoxPos[j + 2][0],
+                    itemBoxPos[j + 2][1],
+                    itemBoxPos[j + 2][2],
+                ));
+        
+            }
+            
+            points2.push(points2[0]); // push to close path
+            console.log(points2);
+            
+            // Creation of a lines mesh
+            var lines2 = BABYLON.MeshBuilder.CreateLines("lines", {points: points2}, scene);
+            lines2.color = new BABYLON.Color3(1, 0, 0);
+
+            var points3 = [];
+            points3.push( new BABYLON.Vector3(
+                car3.position.x,
+                car3.position.y,
+                car3.position.z
+            ))
+
+            for (var j=0; j < itemBoxPos.length; j+=4){
+                points3.push( new BABYLON.Vector3(
+                    itemBoxPos[j + 3][0],
+                    itemBoxPos[j + 3][1],
+                    itemBoxPos[j + 3][2],
+                ));
+        
+            }
+            
+            points3.push(points3[0]); // push to close path
+            console.log(points3);
+            
+            // Creation of a lines mesh
+            var lines3 = BABYLON.MeshBuilder.CreateLines("lines", {points: points3}, scene);
+            lines3.color = new BABYLON.Color3(0, 1, 0);
 
             var impedance = 0.0;
             // velocity increment when shell is thrown ...
