@@ -119,49 +119,49 @@
             });
 
             BABYLON.SceneLoader.ImportMeshAsync("", "models/brick_block_super_mario_bros/", "scene.gltf", scene).then((result) => {
-                brick = result.meshes[0];
-                brick.scaling = new BABYLON.Vector3(0.015, 0.004, 0.002);
-                brick.position.z = -440;
-                brick.position.y = -0.3;
-                brick.position.x = 15;
-                brick.rotation.y = Math.PI/2;
-                brick.rotationQuaternion = null;
+                wall = result.meshes[0];
+                wall.scaling = new BABYLON.Vector3(0.015, 0.004, 0.002);
+                wall.position.z = -440;
+                wall.position.y = -0.3;
+                wall.position.x = 15;
+                wall.rotation.y = Math.PI/2;
+                wall.rotationQuaternion = null;
 
                 for(i=1; i<62; i++){
-                    other_brick = this.brick.clone()
-                    other_brick.position.z += i*13.1;
+                    other_wall = this.wall.clone()
+                    other_wall.position.z += i*13.1;
                 }
                 for(i=0; i<62; i++){
-                    other_brick = this.brick.clone()
-                    other_brick.position.x = -16;
-                    other_brick.position.z += i*13.1;
+                    other_wall = this.wall.clone()
+                    other_wall.position.x = -16;
+                    other_wall.position.z += i*13.1;
                 }
 
                 for(i=0; i<62; i++){
-                    other_brick = this.brick.clone()
-                    other_brick.position.x = 603;
-                    other_brick.position.z += i*13.1;
+                    other_wall = this.wall.clone()
+                    other_wall.position.x = 603;
+                    other_wall.position.z += i*13.1;
                 }
                 for(i=0; i<62; i++){
-                    other_brick = this.brick.clone()
-                    other_brick.position.x = 635;
-                    other_brick.position.z += i*13.1;
-                }
-
-                for(i=0; i<31; i++){
-                    other_brick = this.brick.clone()
-                    other_brick.position.x = 115;
-                    other_brick.position.z = -503.5;
-                    other_brick.rotation.y = Math.PI;
-                    other_brick.position.x += i*13.1;
+                    other_wall = this.wall.clone()
+                    other_wall.position.x = 635;
+                    other_wall.position.z += i*13.1;
                 }
 
                 for(i=0; i<31; i++){
-                    other_brick = this.brick.clone()
-                    other_brick.position.x = 115;
-                    other_brick.position.z = 442;
-                    other_brick.rotation.y = Math.PI;
-                    other_brick.position.x += i*13.1;
+                    other_wall = this.wall.clone()
+                    other_wall.position.x = 115;
+                    other_wall.position.z = -503.5;
+                    other_wall.rotation.y = Math.PI;
+                    other_wall.position.x += i*13.1;
+                }
+
+                for(i=0; i<31; i++){
+                    other_wall = this.wall.clone()
+                    other_wall.position.x = 115;
+                    other_wall.position.z = 442;
+                    other_wall.rotation.y = Math.PI;
+                    other_wall.position.x += i*13.1;
                 }
             });
 
@@ -952,12 +952,13 @@
             var throwed = 0;
             // ... but also when a mushroom is used
             var sprint = 0;
-            // You must arrive to half lap to increase lap when you arrive to the finish line
-            // To ensure that the user actually follows the track
+
+            // ensures that the user actually follows the track
             var half_lap = false;
             scene.registerBeforeRender(function () {
                 impedance = setImpedance(car);
 
+                // collision car-itembox loop
                 for (i=0; i<itemBoxPos.length; i++){
                     if(car.position.x < itemBoxPos[i][0]+1.5 && car.position.x > itemBoxPos[i][0]-1.5 && car.position.z < itemBoxPos[i][2]+1.5 && car.position.z > itemBoxPos[i][2]-1.5){
                         if(item)
@@ -986,7 +987,7 @@
                     }
                 }
 
-                // the car passes over a lethal item, it will do a spin (testacoda)
+                // collision car-lethals: loopthe car passes over a lethal item, it will do a spin (testacoda)
                 for (i=0; i<lethalItemPos.length; i++){
                     if(car.position.x < lethalItemPos[i][0]+1.5 && car.position.x > lethalItemPos[i][0]-1.5 && car.position.z < lethalItemPos[i][2]+1.5 && car.position.z > lethalItemPos[i][2]-1.5){
                         soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
@@ -1057,7 +1058,7 @@
                     }
                 }
 
-                // the car passes over a positive item (aka a mushroom), it will accelerate
+                // collision car-goods: the car passes over a positive item (aka a mushroom), it will accelerate
                 for (i=0; i<goodItemPos.length; i++){
                     if(car.position.x < goodItemPos[i][0]+0.8 && car.position.x > goodItemPos[i][0]-0.8 && car.position.z < goodItemPos[i][2]+0.8 && car.position.z > goodItemPos[i][2]-0.8){
                         sprint = 1;
@@ -1070,10 +1071,46 @@
                     }
                 }
 
+                // collision car-endWorld: (car_x-center_x)^2 + (car_z-center_z)^2 > radius^2
+                if(Math.pow(car.position.x-325, 2)+ Math.pow(car.position.z+60, 2) > 422500){
+                    var endWorldTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                        var textBlock = new BABYLON.GUI.TextBlock("text", '');   
+                        textBlock.color = "orange";
+                        textBlock.fontSize = 100;
+                        textBlock.fontFamily = "impact";
+                        endWorldTexture.addControl(textBlock);
+                        textBlock.text = "You are not supposed to be here..\n Back to the track!";
+                        var handle = window.setInterval(() => {
+                            window.clearInterval(handle);
+                            textBlock.dispose();
+                            endWorldTexture.dispose();
+                        }, 3000);
+                    if(half_lap){
+                        car.position.x = 620;
+                        car.position.z = 35;
+                        car.rotation.y = 0;
+                    }
+                    else{
+                        car.position.x = -5;
+                        car.position.z = 0;
+                        car.rotation.y = Math.PI;
+                    }
+                }
+
+                // collision car-walls: change rotation
+                /*
+                if(wall_horiz || wall_vert || wall_horiz_op || wall_vert_op){
+                    car.rotation.y = car.rotation.y +- Math.PI;
+                }
+                */
+
+                // game loop
                 if(lap <= 3){
+                    // car's movement update
                     car.position.z += (0.5 + sprint - impedance) * Math.cos(angle);
                     car.position.x += (0.5 + sprint - impedance) * Math.sin(angle);
 
+                    // item's movement update
                     if(item){
                         if(throwed == 0){
                             item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(angle);
@@ -1092,8 +1129,10 @@
 
                     angle = car.rotation.y - Math.PI;
                     
+                    // You must arrive to half lap to increase lap when you arrive to the finish line
                     if (car.position.z <37 && car.position.z >33 && car.position.x <640 && car.position.x >600)
                         half_lap = true;
+                    // lap's increment and update
                     if(half_lap && car.position.x <14 && car.position.x >-14 && car.position.z <33 && car.position.z >30){
                         if(lap <=2){
                             var lapTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -1108,6 +1147,7 @@
                                 textBlock.dispose();
                                 lapTexture.dispose();
                             }, 3000);
+
                             if(lap <= 1){
                                 soundLap = new BABYLON.Sound("soundStart", "sounds/lap.mp3", scene, function(){
                                     luigiSound.pause();
@@ -1132,13 +1172,13 @@
                         half_lap = false;
                     }
                 }
+                // end game
                 else{
                     var finishTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                     var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
                     textBlock.color = "orange";
                     textBlock.fontSize = 200;
                     textBlock.fontFamily = "impact";
-                    
                     finishTexture.addControl(textBlock);
                     textBlock.text = "FINISH!";
                     var handle = window.setInterval(() => {
@@ -1146,12 +1186,14 @@
                         textBlock.dispose();
                         finishTexture.dispose();
                     }, 3000);
+
                     setTimeout(function(){
                         window.location.href = "index.html";
                     }, 5000);
                 }
             });
 
+            // controls
             scene.onKeyboardObservable.add((kbInfo) => {
                 switch (kbInfo.type) {
                     case BABYLON.KeyboardEventTypes.KEYDOWN:
