@@ -825,6 +825,13 @@
         function startRace(car) {
             updateInfo(lap, position);
             angle = car.rotation.y - Math.PI;
+
+            // these variables handle the collisions with the (horizontal/vertical) walls
+            var wall_horiz1 = false, wall_horiz2 = false;
+            var wall_vert1 = false, wall_vert2 = false;
+            var wall_horiz_op1 = false, wall_horiz_op2 = false;
+            var wall_vert_op1 = false, wall_vert_op2 = false;
+
             // let's start the soundtrack of the Luigi's Circuit
             const luigiSound = new BABYLON.Sound("luigiSound", "sounds/mk64_luigicircuit.mp3", scene, null, {
                 loop: true,
@@ -987,7 +994,7 @@
                     }
                 }
 
-                // collision car-lethals: loopthe car passes over a lethal item, it will do a spin (testacoda)
+                // collision car-lethals: loop the car passes over a lethal item, it will do a spin (testacoda)
                 for (i=0; i<lethalItemPos.length; i++){
                     if(car.position.x < lethalItemPos[i][0]+1.5 && car.position.x > lethalItemPos[i][0]-1.5 && car.position.z < lethalItemPos[i][2]+1.5 && car.position.z > lethalItemPos[i][2]-1.5){
                         soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
@@ -1003,7 +1010,7 @@
                          * - carStopz: necessary to do not move the car along the z-axis
                          * without these last two, the car will proceed in its motion
                         */
-                       // every animation is composed by key frames
+                        // every animation is composed by key frames
                         var carRotation = new BABYLON.Animation("carRotation", "rotation.y", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
                         const keyFramesRot = []; 
                         
@@ -1098,11 +1105,45 @@
                 }
 
                 // collision car-walls: change rotation
-                /*
-                if(wall_horiz || wall_vert || wall_horiz_op || wall_vert_op){
-                    car.rotation.y = car.rotation.y +- Math.PI;
+                // check over the vertical walls
+                if (car.position.x < -13 && car.position.z > -440 && car.position.z < 360) wall_vert1 = true;                     
+                if (car.position.x > 12 && car.position.x < 20 && car.position.z > -440 && car.position.z < 360) wall_vert_op1 = true;                     
+                if (car.position.x > 633 && car.position.z > -440 && car.position.z < 360) wall_vert2 = true;                     
+                if (car.position.x < 605 && car.position.x > 600 && car.position.z > -440 && car.position.z < 360) wall_vert_op2 = true;                     
+                
+                // correcting directions for vertical walls
+                if (wall_vert1 || wall_vert_op2){
+                    car.rotation.y -= 2 * angle;
+                    car.position.x += 2;
+                    if (item && throwed == 0) item.position.x = car.position.x;
+                    wall_vert1 = false;
+                    wall_vert_op2 = false;
                 }
-                */
+                if (wall_vert_op1 || wall_vert2){
+                    car.rotation.y -= 2 * angle;
+                    car.position.x -= 2;
+                    if (item && throwed == 0) item.position.x = car.position.x;
+                    wall_vert_op1 = false;
+                    wall_vert2 = false;
+                }
+
+                // check over the horizontal walls
+                if (car.position.x > 115 && car.position.x < 510 && car.position.z < 444 && car.position.z > 440) wall_horiz1 = true;
+                if (car.position.x > 115 && car.position.x < 510 && car.position.z < -501 && car.position.z > -505) wall_horiz2 = true;
+
+                // correcting directions for horizontal walls
+                if (wall_horiz1){
+                    car.rotation.y -= angle / 4;
+                    car.position.z += 2;
+                    if (item && throwed == 0) item.position.z = car.position.z;
+                    wall_horiz1 = false; 
+                }
+                if (wall_horiz2){
+                    car.rotation.y += angle / 4;
+                    car.position.z -= 2;
+                    if (item && throwed == 0) item.position.z = car.position.z;
+                    wall_horiz2 = false; 
+                }
 
                 // game loop
                 if(lap <= 3){
