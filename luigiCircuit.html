@@ -55,6 +55,16 @@
             camera.attachControl(canvas, true);
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
 
+            // sky test
+            skyMat = new BABYLON.StandardMaterial("groundMat");
+            skyMat.diffuseTexture = new BABYLON.Texture("textures/bluesky.jpg");
+
+            var skybox = BABYLON.Mesh.CreateBox('SkyBox', 1300, scene, false, BABYLON.Mesh.BACKSIDE);
+            skybox.material = skyMat;
+            skybox.position.x = 325;
+            skybox.position.z = -60;
+            skybox.position.y = 650;
+
             // building the ground as the base of our environment
             groundMat = new BABYLON.StandardMaterial("groundMat");
             groundMat.diffuseTexture = new BABYLON.Texture("textures/t_kusa_070712c.png");
@@ -215,6 +225,14 @@
                     plant.rotation.y = Math.PI/2*3;
                     other_plant.position.x += i*110;
                 }
+            });
+
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/banana_peel_mario_kart/", "scene.gltf", scene).then((result) => {
+                easter = result.meshes[0];
+                easter.scaling = new BABYLON.Vector3(0.002, 0.002, 0.002);
+                easter.position.y = 0.95;
+                easter.position.z = 478;
+                easter.position.x = 493;
             });
 
             bleacherMat = new BABYLON.StandardMaterial("bleacherMat");
@@ -962,6 +980,7 @@
 
             // ensures that the user actually follows the track
             var half_lap = false;
+
             scene.registerBeforeRender(function () {
                 impedance = setImpedance(car);
 
@@ -1231,6 +1250,25 @@
                     setTimeout(function(){
                         window.location.href = "index.html";
                     }, 5000);
+                }
+
+                if (car.position.x > 491.5 && car.position.x < 494.5 && car.position.z > 476.5 && car.position.z < 479.5){
+                    var easterTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                    var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
+                    textBlock.color = "orange";
+                    textBlock.fontSize = 200;
+                    textBlock.fontFamily = "impact";
+                    easterTexture.addControl(textBlock);
+                    textBlock.text = "EASTER EGG FOUND!";
+                    var handle = window.setInterval(() => {
+                        window.clearInterval(handle);
+                        textBlock.dispose();
+                        easterTexture.dispose();
+                    }, 3000);
+
+                    setTimeout(function(){
+                        window.location.href = "easter.html";
+                    }, 4000);
                 }
             });
 
