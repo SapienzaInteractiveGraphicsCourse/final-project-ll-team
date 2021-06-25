@@ -26,7 +26,7 @@
             font-size: x-large; 
             color:black;
             margin-top: 2%;         
-            margin-right: 70%;
+            margin-right: 67%;
             margin-left: 15%;
             text-align: center;
             }
@@ -37,7 +37,7 @@
             border-radius:0.2em;
             font-weight:700;
             font-size: large; 
-            margin-top: 20%;         
+            margin-top: 5%;         
             margin-right: 70%;
             margin-left: 15%;
             text-align: center;
@@ -74,8 +74,10 @@
     <audio id = "mouse" src = "sounds/mouseover.mp3"></audio>
     <p style="margin-left: 8%; background-color:white; margin-right: 57%; text-align: center; font-weight: 700;">Please, if possible access with Google Chrome browser for a better experience.</p>
     <div id="levels">
-
+        <div id="select" onclick="window.location.href = 'luigiCircuit.html';" onmouseover="document.getElementById('mouse').play();"><p>BEGIN GRAND PRIX</p></div>
         <div id="select" onclick="window.location.href = 'luigiCircuit.html';" onmouseover="document.getElementById('mouse').play();"><p>LUIGI CIRCUIT</p></div>
+        <div id="select" onclick="window.location.href = 'bowserCastle.html';" onmouseover="document.getElementById('mouse').play();"><p>BOWSER'S CASTLE</p></div>
+        <div id="select" onclick="window.location.href = 'rainbowRoad.html';" onmouseover="document.getElementById('mouse').play();"><p>RAINBOW ROAD</p></div>
         <div id="select" onclick="window.location.href = 'credits.html';" onmouseover="document.getElementById('mouse').play();"><p>CREDITS</p></div>
         <button id="mute" onclick="document.getElementById('music').pause();" onmouseover="document.getElementById('mouse').play();">Mute sound</button>
         <button id="unmute" onclick="document.getElementById('music').play();" onmouseover="document.getElementById('mouse').play();">Unmute sound</button>
