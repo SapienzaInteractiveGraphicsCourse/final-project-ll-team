@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Rainbow Road</title>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
+        <script src="utils/earcut.min.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    </head>
+
+   <body>
+
+    <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
+
+    <script>
+        const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+        const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+        // better have some global variables to have them always available
+        var car, car1, car2, car3, item;
+        // arrays for the item boxes
+        var itemBoxPos = [], itemBoxes = [];
+        // arrays for 'negative' items
+        var lethalItemPos = [], lethalItems = [];
+        // arrays for 'positive' items
+        var goodItemPos = [], goodItems = [];
+        // arrays for the paths for the computer-controlled cars
+        var points1 = [], points2 = [], points3 = [];
+
+        var groundMat, streetMat, bleachersMat;
+
+        const createScene = () => {
+            
+            const scene = new BABYLON.Scene(engine);
+            const camera = new BABYLON.FollowCamera("camera", new BABYLON.Vector3(0, 0, 0), scene);
+            camera.attachControl(canvas, true);
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
+
+            // Sky material
+            /*
+            var skyboxMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
+            skyboxMaterial.backFaceCulling = false;
+            //skyboxMaterial.reflectionTexture = new BABYLON.Texture("textures/stars_sky_texture.jpg");
+            // Sky mesh (box)
+            var skybox = BABYLON.Mesh.CreateBox("skyBox", 1000.0, scene);
+            skybox.material = skyboxMaterial;
+            */
+
+            // building the ground as the base of our environment
+            groundMat = new BABYLON.StandardMaterial("groundMat");
+            groundMat.diffuseTexture = new BABYLON.Texture("textures/r_earth02.png");
+            
+            const ground = BABYLON.MeshBuilder.CreateSphere("ground", {diameter: 300}, scene);
+            ground.rotation.x = Math.PI / 2;
+            ground.position.x = 325;
+            ground.position.y = -100;
+            ground.position.z = 800;
+            ground.material = groundMat;
+
+            // building the environment around the street
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart_finish_line/", "scene.gltf", scene).then((result) => {
+                finish = result.meshes[0];
+                finish.scaling = new BABYLON.Vector3(-1.1, 0.8, 0.9);
+                finish.position.y = -1;
+                finish.position.x = 0;
+                finish.position.z = 30;
+
+                finish.rotation.y = Math.PI;
+                finish.rotationQuaternion = null;
+
+            });
+
+            // building the street
+            streetMat = new BABYLON.StandardMaterial("streetMat");
+            streetMat.diffuseTexture = new BABYLON.Texture("textures/r_road01.png");
+            streetMat.diffuseTexture.hasAlpha = true;
+            
+            const street = BABYLON.MeshBuilder.CreateBox("street", {width:30, height:60, depth:1});
+            street.rotation.x = Math.PI / 2;
+            street.material = streetMat;
+            var pos_z = 60
+            var pos_x = 10;
+            for (i=0; i<6; i++){
+                other_street = street.clone()
+                other_street.position.z = pos_z;
+                pos_z += 60;
+            }
+            
+            // first curve: we divide it in 4 pieces with an incremental orientation
+            const curve = BABYLON.MeshBuilder.CreateBox("street", {width:30, height:40, depth:1});
+            curve.rotation.x = Math.PI / 2;
+            curve.rotation.y = Math.PI / 9;
+            curve.position.y = 0.05;
+            curve.position.z = pos_z-17;
+            curve.position.x = pos_x-4;
+            pos_z += 14;
+            pos_x += 13;
+            angle = 2*Math.PI / 9;
+            curve.material = streetMat;
+            for (i=0; i<2; i++){
+                other_curve = curve.clone();
+                other_curve.rotation.y = angle;
+                other_curve.position.z = pos_z;
+                other_curve.position.x = pos_x;
+                other_curve.position.y += 0.01*(i+1);
+                pos_z += 18;
+                pos_x += 28;
+                angle += Math.PI / 6;   
+            }
+
+            // second 'rettilineo' of other pieces of street
+            pos_z -= 12;
+            pos_x += 18;
+            for (i=0; i<8; i++){
+                other_street = street.clone()
+                other_street.rotation.y = Math.PI / 2;
+                other_street.position.z = pos_z;
+                other_street.position.x = pos_x;
+                pos_x += 60;
+            }
+
+            // second curve: specular of the first one
+            other_curve = curve.clone();
+            other_curve.rotation.z += Math.PI / 2;
+            other_curve.position.z = pos_z-7;
+            other_curve.position.x = pos_x-15;
+            other_curve.position.y += 0.01;
+            pos_z -= 25;
+            pos_x += 18;
+            angle = 2*Math.PI / 9;
+            for (i=0; i<2; i++){
+                other_curve = curve.clone();
+                other_curve.rotation.z += Math.PI / 2;
+                other_curve.rotation.y = angle;
+                other_curve.position.z = pos_z;
+                other_curve.position.x = pos_x;
+                other_curve.position.y += 0.01*(i+2);
+                pos_z -= 28;
+                pos_x += 20;
+                angle += Math.PI / 6;   
+            }
+
+            // third straight line (greater than the previous one)
+            pos_z -= 15;
+            pos_x -= 15;
+            for (i=0; i<14; i++){
+                other_street = street.clone()
+                other_street.position.z = pos_z;
+                other_street.position.x = pos_x;
+                pos_z -= 60;
+            }
+
+            // third curve
+            other_curve = curve.clone();
+            other_curve.rotation.z += Math.PI;
+            other_curve.position.z = pos_z+15;
+            other_curve.position.x = pos_x-6;
+            other_curve.position.y += 0.01;
+            pos_z -= 15;
+            pos_x -= 23;
+            angle = 2*Math.PI / 9;
+            for (i=0; i<2; i++){
+                other_curve = curve.clone();
+                other_curve.rotation.z += Math.PI;
+                other_curve.rotation.y = angle;
+                other_curve.position.z = pos_z;
+                other_curve.position.x = pos_x;
+                other_curve.position.y += 0.01*(i+2);
+                pos_z -= 20.5;
+                pos_x -= 27.5;
+                angle += Math.PI / 6;   
+            }
+
+            // forth straight line
+            pos_z += 14;
+            pos_x -= 18;
+            for (i=0; i<8; i++){
+                other_street = street.clone()
+                other_street.rotation.y = Math.PI / 2;
+                other_street.position.z = pos_z;
+                other_street.position.x = pos_x;
+                pos_x -= 60;
+            }
+
+            // forth and last curve
+            other_curve = curve.clone();
+            other_curve.rotation.z -= Math.PI/2;
+            other_curve.position.z = pos_z+6;
+            other_curve.position.x = pos_x+14;
+            other_curve.position.y += 0.01;
+            pos_z += 24;
+            pos_x -= 17;
+            angle = 2*Math.PI / 9;
+            for (i=0; i<2; i++){
+                other_curve = curve.clone();
+                other_curve.rotation.z -= Math.PI/2;
+                other_curve.rotation.y = angle;
+                other_curve.position.z = pos_z;
+                other_curve.position.x = pos_x;
+                other_curve.position.y += 0.01*(i+2);
+                pos_z += 26;
+                pos_x -= 20;
+                angle += Math.PI / 6;   
+            }
+
+            // fifth and last straight line
+            pos_z += 20;
+            pos_x += 13;
+            for (i=0; i<6; i++){
+                other_street = street.clone();
+                other_street.rotation.y = Math.PI;
+                other_street.position.z = pos_z;
+                other_street.position.x = pos_x;
+                pos_z += 60;
+            }
+            // add a last piece to nicely end the circuit
+            other_street = BABYLON.MeshBuilder.CreateBox("street", {width:30, height:64, depth:1});
+            other_street.rotation.x = Math.PI / 2;
+            other_street.material = streetMat;
+            other_street.position.z = pos_z+2;
+            other_street.position.x = pos_x;
+
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart/", "scene.gltf", scene).then((result) => {
+                car = result.meshes[0];
+                car.scaling = new BABYLON.Vector3(2, 2, -2);
+                car.position.x = -5;
+                car.position.y = 0.7;
+                car.rotationQuaternion = null;
+                car.rotation.y = Math.PI;
+                // the camera will follow the car with this
+                camera.lockedTarget = car;
+            });
+
+            points1.push(new BABYLON.Vector3(5, 0.7, 6.67));
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/toad_kart/", "scene.gltf", scene).then((result) => {
+                car1 = result.meshes[0];
+                car1.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
+                car1.position.x = 5;
+                car1.position.y = 0.7;
+                car1.position.z = 6.67;
+                car1.rotationQuaternion = null;
+                car1.rotation.y = Math.PI;
+            });
+
+            points2.push(new BABYLON.Vector3(-5, 0.7, 13.37));
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/bowserkart/", "scene.gltf", scene).then((result) => {
+                car2 = result.meshes[0];
+                car2.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
+                car2.position.x = -5;
+                car2.position.y = 0.7;
+                car2.position.z = 13.37;
+                car2.rotationQuaternion = null;
+                car2.rotation.y = Math.PI;
+            });
+
+            points3.push(new BABYLON.Vector3(5, 0.7, 20));
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/dk_kart/", "scene.gltf", scene).then((result) => {
+                car3 = result.meshes[0];
+                car3.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
+                car3.position.x = 5;
+                car3.position.y = 0.7;
+                car3.position.z = 20;
+                car3.rotationQuaternion = null;
+                car3.rotation.y = Math.PI;
+            });
+
+            // these functions are asynchronous, we need to pay attention in the pushes
+            createItemBoxLine(scene, [-7, 1, 130], true, false);
+            createItemBoxLine(scene, [-7, 1, 300], true, false);
+
+            points2.push(new BABYLON.Vector3(0, 1, 420));
+            points2.push(new BABYLON.Vector3(65, 1, 460));
+            points1.push(new BABYLON.Vector3(5, 1, 420));
+            points1.push(new BABYLON.Vector3(65, 1, 455));
+            points3.push(new BABYLON.Vector3(10, 1, 420));
+            points3.push(new BABYLON.Vector3(65, 1, 450));
+
+
+            createItemBoxLine(scene, [200, 1, 451], false, false);
+            createItemBoxLine(scene, [400, 1, 451], false, false);
+
+            points2.push(new BABYLON.Vector3(570, 1, 460));
+            points2.push(new BABYLON.Vector3(625, 1, 400));
+            points1.push(new BABYLON.Vector3(570, 1, 455));
+            points1.push(new BABYLON.Vector3(620, 1, 400));
+            points3.push(new BABYLON.Vector3(570, 1, 450));
+            points3.push(new BABYLON.Vector3(615, 1, 400));
+
+            createItemBoxLine(scene, [613.5, 1, 300], true, true);
+            createItemBoxLine(scene, [613.5, 1, 130], true, true);
+            points2.push(new BABYLON.Vector3(628.5, 1, 0));
+            points1.push(new BABYLON.Vector3(624, 1, 0));
+            points3.push(new BABYLON.Vector3(619.5, 1, 0));
+            createItemBoxLine(scene, [613.5, 1, -130], true, true);
+            createItemBoxLine(scene, [613.5, 1, -330], true, true);
+
+            points2.push(new BABYLON.Vector3(625, 1, -460));
+            points2.push(new BABYLON.Vector3(570, 1, -525));
+            points1.push(new BABYLON.Vector3(620, 1, -460));
+            points1.push(new BABYLON.Vector3(570, 1, -520));
+            points3.push(new BABYLON.Vector3(615, 1, -460));
+            points3.push(new BABYLON.Vector3(570, 1, -515));
+
+            createItemBoxLine(scene, [400, 1, -527], false, true);
+            createItemBoxLine(scene, [200, 1, -527], false, true);
+
+            points2.push(new BABYLON.Vector3(70, 1, -527));
+            points2.push(new BABYLON.Vector3(0, 1, -480));
+            points1.push(new BABYLON.Vector3(70, 1, -522));
+            points1.push(new BABYLON.Vector3(5, 1, -480));
+            points3.push(new BABYLON.Vector3(70, 1, -517));
+            points3.push(new BABYLON.Vector3(10, 1, -480));
+
+            createItemBoxLine(scene, [-7, 1, -330], true, false);
+            createItemBoxLine(scene, [-7, 1, -130], true, false);
+
+            points1.push(points1[0]); // push to close path
+            points2.push(points2[0]); // push to close path
+            points3.push(points3[0]); // push to close path
+
+
+            // adding sounds
+            const soundStart = new BABYLON.Sound("soundStart", "sounds/mk64_racestart.wav", scene, function(){
+                soundStart.play();
+            });
+
+            // once the start sound is over we proceed with the countdown
+            soundStart.onended = function(){
+
+                // countdown for the race to start
+                var countTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                var i = 3; // seconds
+                var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
+                textBlock.color = "orange";
+                textBlock.fontSize = 150;
+                textBlock.fontFamily = "impact";
+                
+                countTexture.addControl(textBlock);
+                var handle = window.setInterval(() => {
+                    i--;
+                    textBlock.text = new String(i)
+
+                    if (i === 0) {
+                        textBlock.text = "GO!"
+                    }
+
+                    if (i == -1){
+                        window.clearInterval(handle);
+
+                        textBlock.dispose();
+                        countTexture.dispose();
+                    }
+                }, 890);
+                
+                const countSound = new BABYLON.Sound("countSound", "sounds/mk64_countdown.wav", scene, function(){
+                    countSound.play();
+                });
+                
+                countSound.onended = function(){
+                    startRace(car);
+                }
+            };
+            return scene;
+        };
+
+        // this fn creates a set of four aligned (along x- or z-axis) item boxes
+        function createItemBoxLine(scene, starting_pos, alignedX, opposed){
+            if(alignedX&&!opposed){
+                points2.push(new BABYLON.Vector3(starting_pos[0]+4.5, starting_pos[1], starting_pos[2]));
+                points1.push(new BABYLON.Vector3(starting_pos[0]+9, starting_pos[1], starting_pos[2]));
+                points3.push(new BABYLON.Vector3(starting_pos[0]+13.5, starting_pos[1], starting_pos[2]));
+            }
+            else if(alignedX&&opposed){
+                points3.push(new BABYLON.Vector3(starting_pos[0]+4.5, starting_pos[1], starting_pos[2]));
+                points1.push(new BABYLON.Vector3(starting_pos[0]+9, starting_pos[1], starting_pos[2]));
+                points2.push(new BABYLON.Vector3(starting_pos[0]+13.5, starting_pos[1], starting_pos[2]));
+            }
+            else if(!alignedX&&opposed){
+                points1.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+9));
+                points3.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+13.5));
+                points2.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+4.5));
+            }
+            else{
+                points1.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+9));
+                points2.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+13.5));
+                points3.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+4.5));
+            }
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart_item_box/", "scene.gltf", scene).then((result) => {
+                itemBox = result.meshes[0];
+                itemBox.scaling = new BABYLON.Vector3(0.05, 0.05, 0.05);
+                itemBox.position.z = starting_pos[2];
+                itemBox.position.y = starting_pos[1];
+                itemBox.position.x = starting_pos[0];
+                itemBox.rotationQuaternion = null;  
+
+                itemBoxPos.push([itemBox.position.x, itemBox.position.y, itemBox.position.z]);
+                itemBoxes.push(itemBox);
+
+                otherBox1 = itemBox.clone();
+                otherBox2 = itemBox.clone();
+                otherBox3 = itemBox.clone();
+
+                if (alignedX){
+                    otherBox1.position.x = itemBox.position.x + 4.5;
+                    otherBox2.position.x = itemBox.position.x + 9;
+                    otherBox3.position.x = itemBox.position.x + 13.5;
+                }
+                else{
+                    otherBox1.position.z = itemBox.position.z + 4.5;
+                    otherBox2.position.z = itemBox.position.z + 9;
+                    otherBox3.position.z = itemBox.position.z + 13.5;
+                }    
+                itemBoxPos.push([otherBox1.position.x, otherBox1.position.y, otherBox1.position.z]);
+                itemBoxPos.push([otherBox2.position.x, otherBox2.position.y, otherBox2.position.z]);
+                itemBoxPos.push([otherBox3.position.x, otherBox3.position.y, otherBox3.position.z]);
+
+                itemBoxes.push(otherBox1);
+                itemBoxes.push(otherBox2);
+                itemBoxes.push(otherBox3);
+
+                // for the path that the other cars have to follow we can use the position
+                // of the instantiated item boxes as reference points: the cars will pass though
+                // one on the four aligned box in every set above
+            });
+        }
+
+        // we need to distinguish a positive and a negative item
+        var positiveItem = false;
+
+        // before use/throw the object we have it 'attached' to the car
+        function createItem(name){
+            var previous_item = item;
+            if (name == 'banana'){
+                if (previous_item){
+                    posx = previous_item.position.x;
+                    posy = previous_item.position.y;
+                    posz = previous_item.position.z;
+                    if (positiveItem){
+                        goodItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            goodItemPos.push([posx, posy, posz])
+                            
+                        }, 500);
+
+                    }
+                    else {        
+                        lethalItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            lethalItemPos.push([posx, posy, posz])
+                            
+                        }, 500);
+                    }
+                }
+                item_name = 'banana';
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/banana_peel_mario_kart/", "scene.gltf", scene).then((result) => {
+                    item = result.meshes[0];
+                    item.scaling = new BABYLON.Vector3(0.002, 0.002, 0.002);
+                    item.position.y = 3.9;
+                    item.position.z = car.position.z;
+                    item.position.x = car.position.x;
+                    positiveItem = false;
+                });
+            }
+            else if (name == 'red_shell'){
+                if (previous_item){
+                    posx = previous_item.position.x;
+                    posy = previous_item.position.y;
+                    posz = previous_item.position.z;                  
+
+                    if (positiveItem){
+                        goodItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            goodItemPos.push([posx, posy, posz])
+                            
+                        }, 500);
+
+                    }
+                    else {        
+                        lethalItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            lethalItemPos.push([posx, posy, posz])
+                            
+                        }, 500);
+                    }
+                }
+                item_name = 'red_shell';
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/red_shell/", "scene.gltf", scene).then((result) => {
+                    item = result.meshes[0];
+                    item.scaling = new BABYLON.Vector3(0.15, 0.15, 0.15);
+                    item.position.y = 3.9;
+                    item.position.z = car.position.z;
+                    item.position.x = car.position.x;
+                    positiveItem = false;
+                });
+            }
+            else if (name == 'mushroom'){
+                if (previous_item){
+                    posx = previous_item.position.x;
+                    posy = previous_item.position.y;
+                    posz = previous_item.position.z;                  
+
+                    if (positiveItem){
+                        goodItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            goodItemPos.push([posx, posy, posz])
+                            
+                        }, 500);
+
+                    }
+                    else {        
+                        lethalItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            lethalItemPos.push([posx, posy, posz])
+                            
+                        }, 500);
+                    } 
+                }
+                item_name = 'mushroom';
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/mushroom_mario/", "scene.gltf", scene).then((result) => {
+                    item = result.meshes[0];
+                    item.scaling = new BABYLON.Vector3(1.25, 1.25, 1.25);
+                    item.position.y = 3.9;
+                    item.position.z = car.position.z;
+                    item.position.x = car.position.x;
+                    positiveItem = true;
+                });
+            }
+            else if (name == 'green_shell'){
+                if (previous_item){
+                    posx = previous_item.position.x;
+                    posy = previous_item.position.y;
+                    posz = previous_item.position.z;                  
+
+                    if (positiveItem){
+                        goodItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            goodItemPos.push([posx, posy, posz])
+                            
+                        }, 500);
+
+                    }
+                    else {        
+                        lethalItems.push(previous_item);
+
+                        // this makes the item handling works: if we leave an item because we
+                        // hit another item box, we can set this interval to move far away from
+                        // the item and to not be hitten by it
+                        setTimeout(function(){
+                            lethalItemPos.push([posx, posy, posz])
+                            
+                        }, 500);
+                    } 
+                }
+                item_name = 'green_shell';
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/koopa_troopa_shell_super_mario_bros/", "scene.gltf", scene).then((result) => {
+                    item = result.meshes[0];
+                    item.scaling = new BABYLON.Vector3(0.005, 0.005, 0.005);
+                    item.position.y = 3.4;
+                    item.position.z = car.position.z;
+                    item.position.x = car.position.x;
+                    item.rotationQuaternion = null;
+                    item.rotation.y = Math.PI / 2;
+                    positiveItem = false;
+                });
+            }
+            else {
+                console.log("Unsopperted item to be created! Please, debug.")
+            }
+        }
+
+        // if the car is out of the street I will have more friction
+        function setImpedance(car) {
+            impedance = 0.0;
+            
+            if ((car.position.z > -534 && car.position.z < 471 && car.position.x > -13 && car.position.x < 634)&&
+                 !(car.position.z > -507 && car.position.z < 444 && car.position.x > 13.5 && car.position.x < 607))
+                impedance = 0.0;
+            else
+                impedance = 0.3;
+
+            return impedance;
+        }
+
+        function updateInfo(lap, position) {
+            var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+            let x = new BABYLON.GUI.TextBlock('TextBlock', '120'); 
+            x.fontSize = 60;
+            x.fontFamily = "impact";
+            x.color = "yellow";
+            var rect1 = new BABYLON.GUI.Rectangle();
+            rect1.width = 0.25;
+            rect1.horizontalAlignment = 1;
+            rect1.verticalAlignment = 0;
+            rect1.height = "150px";
+            rect1.cornerRadius = 10;
+            rect1.color = "black";
+            rect1.thickness = 4;
+            rect1.background = "grey";
+            advancedTexture.addControl(rect1);
+            rect1.addControl(x);
+
+            x.text = 'Lap ' + String(lap) + '/3' + '\n Position: ' + String(position);
+        }
+
+        var lap = 1;
+        var position = 1;
+
+        function startRace(car) {
+            updateInfo(lap, position);
+            angle = car.rotation.y - Math.PI;
+
+            // these variables handle the collisions with the (horizontal/vertical) walls
+            var wall_horiz1 = false, wall_horiz2 = false;
+            var wall_vert1 = false, wall_vert2 = false;
+            var wall_horiz_op1 = false, wall_horiz_op2 = false;
+            var wall_vert_op1 = false, wall_vert_op2 = false;
+
+            // let's start the soundtrack of the Rainbow Road
+            const rainbowSound = new BABYLON.Sound("rainbowSound", "sounds/N64 Rainbow Road.mp3", scene, null, {
+                loop: true,
+                autoplay: true 
+            });
+
+            const animCarX1 = new BABYLON.Animation("canAnimationx1", "position.x", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ1 = new BABYLON.Animation("canAnimationz1", "position.z", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            
+            const animCarX2 = new BABYLON.Animation("canAnimationx2", "position.x", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ2 = new BABYLON.Animation("canAnimationz2", "position.z", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+            const animCarX3 = new BABYLON.Animation("canAnimationx3", "position.x", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ3 = new BABYLON.Animation("canAnimationz3", "position.z", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+            const rotCar = new BABYLON.Animation("rotAnimationz1", "rotation.y", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+            const carKeysX1 = [];
+            const carKeysZ1 = [];
+            
+            const carKeysX2 = [];
+            const carKeysZ2 = [];
+
+            const carKeysX3 = [];
+            const carKeysZ3 = [];
+
+            const rotKeys = [];
+
+            frame = 0;
+            for (j=0; j<points1.length; j++){
+                carKeysX1.push({
+                    frame: frame,
+                    value: points1[j].x
+                });
+                carKeysZ1.push({
+                    frame: frame,
+                    value: points1[j].z
+                });
+
+                carKeysX2.push({
+                    frame: frame,
+                    value: points2[j].x
+                });
+                carKeysZ2.push({
+                    frame: frame,
+                    value: points2[j].z
+                });
+
+                carKeysX3.push({
+                    frame: frame,
+                    value: points3[j].x
+                });
+                carKeysZ3.push({
+                    frame: frame,
+                    value: points3[j].z
+                });
+
+                // rotation animation
+                if(j == 0){
+                    rotKeys.push({
+                        frame: frame,
+                        value:  Math.PI
+                    });
+                }
+                else if(j == 4){
+                    rotKeys.push({
+                        frame: frame,
+                        value:  Math.PI*3 / 2
+                    });
+                }
+                else if(j == 8){
+                    rotKeys.push({
+                        frame: frame,
+                        value:  Math.PI*2
+                    });
+                }
+                else if(j == 15){
+                    rotKeys.push({
+                        frame: frame,
+                        value: Math.PI*5/2
+                    });
+                }
+                else if(j == 19){
+                    rotKeys.push({
+                        frame: frame,
+                        value: Math.PI*3
+                    });
+                }
+                else{
+                    rotKeys.push({
+                        frame: frame,
+                        value:  rotKeys[rotKeys.length - 1].value
+                    });
+                }
+
+                frame += 150;
+            }
+            animCarX1.setKeys(carKeysX1);
+            animCarZ1.setKeys(carKeysZ1);
+            rotCar.setKeys(rotKeys);
+            
+            animCarX2.setKeys(carKeysX2);
+            animCarZ2.setKeys(carKeysZ2);
+
+            animCarX3.setKeys(carKeysX3);
+            animCarZ3.setKeys(carKeysZ3);
+
+            scene.beginDirectAnimation(car1, [animCarX1, animCarZ1, rotCar], 0, frame, true);
+            scene.beginDirectAnimation(car2, [animCarX2, animCarZ2, rotCar], 0, frame, true);
+            scene.beginDirectAnimation(car3, [animCarX3, animCarZ3, rotCar], 0, frame, true);
+
+            
+            // decomment these lines if you want to test the paths of the computer-controlled cars
+            // Creation of a lines mesh
+            /*
+            var lines1 = BABYLON.MeshBuilder.CreateLines("lines", {points: points1}, scene);
+            var lines2 = BABYLON.MeshBuilder.CreateLines("lines", {points: points2}, scene);
+            lines2.color = new BABYLON.Color3(1, 0, 0);
+            var lines3 = BABYLON.MeshBuilder.CreateLines("lines", {points: points3}, scene);
+            lines3.color = new BABYLON.Color3(0, 1, 0);
+            */
+
+            var impedance = 0.0;
+            // velocity increment when shell is thrown ...
+            var throwed = 0;
+            // ... but also when a mushroom is used
+            var sprint = 0;
+
+            // ensures that the user actually follows the track
+            var half_lap = false;
+
+            // whether to save the position of the car before the fall
+            var save = true;
+
+            scene.registerBeforeRender(function () {
+                impedance = setImpedance(car);
+
+                // collision car-itembox loop
+                for (i=0; i<itemBoxPos.length; i++){
+                    if(car.position.x < itemBoxPos[i][0]+1.5 && car.position.x > itemBoxPos[i][0]-1.5 && car.position.z < itemBoxPos[i][2]+1.5 && car.position.z > itemBoxPos[i][2]-1.5){
+                        if(item)
+                            item.position.y = 0.95;
+
+                        // we have four items randomly chosen
+                        throwed = 0;
+                        if(Math.random()<0.25)
+                            createItem('red_shell');
+                        
+                        else if(Math.random()<0.5)
+                            
+                            createItem('banana');
+                        
+                        else if(Math.random()<0.75)
+                            createItem('mushroom');
+                        
+                        else
+                            createItem('green_shell');
+                        
+                        // removing the 'hitten' item box from the arrays of item boxes
+                        itemBoxes[i].dispose();
+                        itemBoxes.splice(i, 1);
+                        itemBoxPos.splice(i, 1);
+                        break;
+                    }
+                }
+
+                // collision car-lethals loop: the car passes over a lethal item, it will do a spin (testacoda)
+                for (i=0; i<lethalItemPos.length; i++){
+                    if(car.position.x < lethalItemPos[i][0]+1.5 && car.position.x > lethalItemPos[i][0]-1.5 && car.position.z < lethalItemPos[i][2]+1.5 && car.position.z > lethalItemPos[i][2]-1.5){
+                        soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
+                            rainbowSound.pause();
+                            soundHit.play();
+                        });
+                        soundHit.onended = function(){
+                            rainbowSound.play();
+                        }
+                        /* the spin is realized with a combination of three animations:
+                         * - carRotation: 'actual' spin
+                         * - carStopx: necessary to do not move the car along the x-axis
+                         * - carStopz: necessary to do not move the car along the z-axis
+                         * without these last two, the car will proceed in its motion
+                        */
+                        // every animation is composed by key frames
+                        var carRotation = new BABYLON.Animation("carRotation", "rotation.y", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                        const keyFramesRot = []; 
+                        
+                        var carStopx = new BABYLON.Animation("carStopx", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                        var carStopz = new BABYLON.Animation("carStopx", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                        const keyFramesPosx = [];
+                        const keyFramesPosz = [];
+
+                        const initial_rot = car.rotation.y;
+                        const initial_posx = car.position.x;
+                        const initial_posz = car.position.z;
+                        
+                        var spin = Math.PI;
+                        for (j=0; j<5; j++){
+                            keyFramesRot.push({
+                                frame: 5*j,
+                                value: initial_rot + spin
+                            });
+                            spin += Math.PI;
+
+                            keyFramesPosx.push({
+                                frame: 5*j,
+                                value: initial_posx
+                            });
+                            keyFramesPosz.push({
+                                frame: 5*j,
+                                value: initial_posz
+                            });
+                        }
+                        keyFramesRot.push({
+                            frame: 30,
+                            value: initial_rot
+                        })
+                    
+                        carRotation.setKeys(keyFramesRot);
+                        carStopx.setKeys(keyFramesPosx);
+                        carStopz.setKeys(keyFramesPosz);
+
+                        scene.beginDirectAnimation(car, [carRotation, carStopx, carStopz], 0, 60, false);
+                        
+                        lethalItems[i].dispose();
+                        lethalItems.splice(i, 1);
+                        lethalItemPos.splice(i, 1);
+
+                        setTimeout(function(){
+                            if(item){
+                                    item.position.z = car.position.z;
+                                    item.position.x = car.position.x;
+                            }
+                        }, 3000);
+                        break;
+                    }
+                }
+
+                // collision car-goods: the car passes over a positive item (aka a mushroom), it will accelerate
+                for (i=0; i<goodItemPos.length; i++){
+                    if(car.position.x < goodItemPos[i][0]+0.8 && car.position.x > goodItemPos[i][0]-0.8 && car.position.z < goodItemPos[i][2]+0.8 && car.position.z > goodItemPos[i][2]-0.8){
+                        sprint = 1;
+                        
+                        goodItems[i].dispose();
+                        goodItems.splice(i, 1);
+                        goodItemPos.splice(i, 1);
+
+                        break;
+                    }
+                }
+
+                // collision car-endWorld: (car_x-center_x)^2 + (car_z-center_z)^2 > radius^2
+                if(Math.pow(car.position.x-325, 2)+ Math.pow(car.position.z+60, 2) > 422500){
+                    var endWorldTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                        var textBlock = new BABYLON.GUI.TextBlock("text", '');   
+                        textBlock.color = "orange";
+                        textBlock.fontSize = 100;
+                        textBlock.fontFamily = "impact";
+                        endWorldTexture.addControl(textBlock);
+                        textBlock.text = "You are not supposed to be here..\n Back to the track!";
+                        var handle = window.setInterval(() => {
+                            window.clearInterval(handle);
+                            textBlock.dispose();
+                            endWorldTexture.dispose();
+                        }, 3000);
+                    if(half_lap){
+                        car.position.x = 620;
+                        car.position.z = 35;
+                        car.rotation.y = 0;
+                    }
+                    else{
+                        car.position.x = -5;
+                        car.position.z = 0;
+                        car.rotation.y = Math.PI;
+                    }
+                }
+
+                // collision car-walls: change rotation
+                // check over the vertical walls
+                if (save && car.position.x < -13 && car.position.z > -440 && car.position.z < 360) wall_vert1 = true;                     
+                if (save && car.position.x > 12 && car.position.x < 20 && car.position.z > -440 && car.position.z < 360) wall_vert_op1 = true;                     
+                if (save && car.position.x > 633 && car.position.z > -440 && car.position.z < 360) wall_vert2 = true;                     
+                if (save && car.position.x < 605 && car.position.x > 600 && car.position.z > -440 && car.position.z < 360) wall_vert_op2 = true;                     
+            
+                // check over the horizontal walls
+                if (car.position.x > 115 && car.position.x < 510 && car.position.z < 444 && car.position.z > 440) wall_horiz1 = true;
+                if (car.position.x > 115 && car.position.x < 510 && car.position.z < -501 && car.position.z > -505) wall_horiz2 = true;
+
+                var posx_fall = 0, posz_fall = 0;
+                
+                // falling down like a spectacular comet :)
+                if (wall_vert1) {
+                    // fixing the position of the car (like in a spin above)
+                    var carStopx = new BABYLON.Animation("carStopx", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                    var carStopz = new BABYLON.Animation("carStopx", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                    const keyFramesPosx = [];
+                    const keyFramesPosz = [];
+
+                    const initial_posx = car.position.x;
+                    const initial_posz = car.position.z;
+                    
+                    for (j=0; j<5; j++){
+                        keyFramesPosx.push({
+                            frame: 5*j,
+                            value: initial_posx
+                        });
+                        keyFramesPosz.push({
+                            frame: 5*j,
+                            value: initial_posz
+                        });
+                    }
+                    
+                    carStopx.setKeys(keyFramesPosx);
+                    carStopz.setKeys(keyFramesPosz);
+
+                    scene.beginDirectAnimation(car, [carStopx, carStopz], 0, 30, false);
+                    
+                    car.position.y -= 1;
+                    if (save){
+                        posx_fall = initial_posx + 12.5;
+                        posz_fall = initial_posz;
+                        save = false;
+                    }
+                    console.log(wall_vert1);
+                    
+                }
+                
+                // restore the correct position on the race truck
+                if (car.position.y < -100){
+                    car.position.y = 0.7;
+                    car.position.x = posx_fall;
+                    car.position.z = posz_fall;
+                    save = true;
+                    wall_vert1 = false;
+                    console.log(car.position);
+                }
+
+
+                // game loop
+                if(lap <= 3){
+                    // car's movement update
+                    car.position.z += (0.5 + sprint - impedance) * Math.cos(angle);
+                    car.position.x += (0.5 + sprint - impedance) * Math.sin(angle);
+
+                    // item's movement update
+                    if(item){
+                        if(throwed == 0){
+                            item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(angle);
+                            item.position.x += (0.5 + throwed + sprint - impedance) * Math.sin(angle);
+                            // saved to throw shell in the right direction
+                            last_angle = angle;
+                        }
+                        else{
+                            item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(last_angle);
+                            item.position.x += (0.5 + throwed + sprint - impedance) * Math.sin(last_angle);
+                        }
+                                      
+                    }
+                    // trick to gradually reduce the sprint of a mushroom
+                    if (sprint > 0) sprint -= 0.002;
+
+                    angle = car.rotation.y - Math.PI;
+                    
+                    // You must arrive to half lap to increase lap when you arrive to the finish line
+                    if (car.position.z <37 && car.position.z >33 && car.position.x <640 && car.position.x >600)
+                        half_lap = true;
+                    // lap's increment and update
+                    if(half_lap && car.position.x <14 && car.position.x >-14 && car.position.z <33 && car.position.z >30){
+                        if(lap <=2){
+                            var lapTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                            var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
+                            textBlock.color = "orange";
+                            textBlock.fontSize = 150;
+                            textBlock.fontFamily = "impact";
+                            lapTexture.addControl(textBlock);
+                            textBlock.text = "LAP " + String(lap) + " FINISHED!";
+                            var handle = window.setInterval(() => {
+                                window.clearInterval(handle);
+                                textBlock.dispose();
+                                lapTexture.dispose();
+                            }, 3000);
+
+                            if(lap <= 1){
+                                soundLap = new BABYLON.Sound("soundStart", "sounds/lap.mp3", scene, function(){
+                                    rainbowSound.pause();
+                                    soundLap.play();
+                                });
+                                soundLap.onended = function(){
+                                    rainbowSound.play();
+                                }
+                            }
+                            else{
+                                soundFinalLap = new BABYLON.Sound("soundStart", "sounds/final_lap.mp3", scene, function(){
+                                    rainbowSound.pause();
+                                    soundFinalLap.play();
+                                });
+                                soundFinalLap.onended = function(){
+                                    rainbowSound.play();
+                                }
+                            }
+                            updateInfo(lap+1, position);
+                        }
+                        lap += 1;
+                        half_lap = false;
+                    }
+                }
+                // end game
+                else{
+                    var finishTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                    var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
+                    textBlock.color = "orange";
+                    textBlock.fontSize = 200;
+                    textBlock.fontFamily = "impact";
+                    finishTexture.addControl(textBlock);
+                    textBlock.text = "FINISH!";
+                    var handle = window.setInterval(() => {
+                        window.clearInterval(handle);
+                        textBlock.dispose();
+                        finishTexture.dispose();
+                    }, 3000);
+
+                    setTimeout(function(){
+                        window.location.href = "index.html";
+                    }, 5000);
+                }
+            });
+
+            // controls
+            scene.onKeyboardObservable.add((kbInfo) => {
+                switch (kbInfo.type) {
+                    case BABYLON.KeyboardEventTypes.KEYDOWN:
+                        switch (kbInfo.event.key) {
+                            case "a":
+                            case "A":
+                                car.rotation.y -= Math.PI / 12;
+                            break
+                            case "d":
+                            case "D":
+                                car.rotation.y += Math.PI / 12;
+                            break
+                            case "w":
+                            case "W":
+                                car.position.z += 1 * Math.cos(angle);
+                                car.position.x += 1 * Math.sin(angle);
+                                if(item && throwed == 0){
+                                    item.position.z += 1 * Math.cos(angle);
+                                    item.position.x += 1 * Math.sin(angle);
+                                }
+                            break
+                            case "s":
+                            case "S":
+                                car.position.z -= 0.5 * Math.cos(angle);
+                                car.position.x -= 0.5 * Math.sin(angle);
+                                if(item && throwed == 0){
+                                    item.position.z -= 0.5 * Math.cos(angle);
+                                    item.position.x -= 0.5 * Math.sin(angle);
+                                }
+                            break
+                            case "e":
+                            case "E":
+                                if (item){
+                                    if(this.item_name == 'banana'){
+                                        item.position.y = 0.95;
+                                        posx = item.position.x;
+                                        posy = item.position.y;
+                                        posz = item.position.z;                  
+                                        lethalItems.push(item);
+                                        item = null;
+                                        
+                                        // this makes the item handling works: if we leave an item because we
+                                        // hit another item box, we can set this interval to move far away from
+                                        // the item and to not be hitten by it
+                                        setTimeout(function(){
+                                            lethalItemPos.push([posx, posy, posz])
+                                        }, 500);
+
+                                    }
+                                    else if (this.item_name == 'red_shell'){
+                                        item.position.y = 0.95;
+                                        throwed = 0.8;
+                                    }
+                                    else if (this.item_name == 'green_shell'){
+                                        item.position.y = 0.95;
+                                        throwed = 0.8;
+                                    }
+                                    else if (this.item_name == 'mushroom'){
+                                        sprint = 1;
+                                        item.dispose();
+                                        item = null;
+                                    }
+                                }
+                            break
+                        }
+                    break;
+                }
+            });
+        }
+
+        const scene = createScene(); //Call the createScene function
+        
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+                scene.render();
+        });
+
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+                engine.resize();
+        });
+    </script>
+
+   </body>
+
+</html>
