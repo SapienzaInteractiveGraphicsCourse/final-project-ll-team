@@ -17,7 +17,7 @@
                 background-repeat: no-repeat;
             }
             
-            #list{
+            .list{
                 background-color: rgba(170, 21, 30, 1);
                 border: 1px solid rgba(255, 255, 255, 0);
                 border-radius:0.8em;
@@ -51,9 +51,20 @@
 
     <div id="levels">
 
-        <div id="list" onclick="window.location.href = 'https://it.linkedin.com/in/leandro-maglianella-9807901ab';" onmouseover="document.getElementById('mouse').play();"><p>Leandro Maglianella</p></div>
-        <div id="list" onclick="window.location.href = 'https://it.linkedin.com/in/lorenzo-nicoletti-8374071b0';" onmouseover="document.getElementById('mouse').play();"><p>Lorenzo Nicoletti</p></div>
+        <div id="io" class="list" onclick="window.location.href = 'https://it.linkedin.com/in/leandro-maglianella-9807901ab';" onmouseover="over(this.id)" onmouseout="out(this.id)"><p>Leandro Maglianella</p></div>
+        <div id="lorenzo" class="list" onclick="window.location.href = 'https://it.linkedin.com/in/lorenzo-nicoletti-8374071b0';" onmouseover="over(this.id)" onmouseout="out(this.id)"><p>Lorenzo Nicoletti</p></div>
     </div>
+
+    <script>
+        function over (id){
+            document.getElementById('mouse').play();
+            document.getElementById(id).style.color = 'black';
+        }
+        function out (id){
+            document.getElementById(id).style.color = 'white';
+        }
+
+    </script>
 
    </body>
 
