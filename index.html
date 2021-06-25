@@ -18,40 +18,28 @@
                 background-position-x: center;
             }
             
-            #select{
-            background-color:#1df32f;
-            border: 1px solid rgba(255, 255, 255,0);
-            border-radius:0.8em;
-            font-weight:1000;
-            font-size: x-large; 
-            color:black;
-            margin-top: 2%;         
-            margin-right: 67%;
-            margin-left: 15%;
-            text-align: center;
+            .select{
+                border: 10px solid rgba(255, 255, 255,0);
+                border-radius:1.5em;
+                font-weight:1000;
+                font-size: x-large; 
+                color:black;
+                margin-top: 3%;         
+                margin-right: 67%;
+                margin-left: 15%;
+                text-align: center;
             }
 
-            #mute{
-            background-color: white;
-            border: 10px solid rgba(255, 255, 255,0);
-            border-radius:0.2em;
-            font-weight:700;
-            font-size: large; 
-            margin-top: 5%;         
-            margin-right: 70%;
-            margin-left: 15%;
-            text-align: center;
-            }
-            #unmute{
-            background-color: white;
-            border: 10px solid rgba(255, 255, 255,0);
-            border-radius:0.2em;
-            font-weight:700;
-            font-size: large; 
-            margin-top: 2%;         
-            margin-right: 70%;
-            margin-left: 15%;
-            text-align: center;
+            .controls{
+                background-color: #1df32f;
+                border: 10px solid rgba(255, 255, 255,0);
+                border-radius:0.2em;
+                font-weight:700;
+                font-size: large;
+                margin-top: 1%;
+                margin-right: 5%;
+                margin-left: 80%;
+                text-align: center;
             }
             
             #renderCanvas {
@@ -74,14 +62,35 @@
     <audio id = "mouse" src = "sounds/mouseover.mp3"></audio>
     <p style="margin-left: 8%; background-color:white; margin-right: 57%; text-align: center; font-weight: 700;">Please, if possible access with Google Chrome browser for a better experience.</p>
     <div id="levels">
-        <div id="select" onclick="window.location.href = 'luigiCircuit.html';" onmouseover="document.getElementById('mouse').play();"><p>BEGIN GRAND PRIX</p></div>
-        <div id="select" onclick="window.location.href = 'luigiCircuit.html';" onmouseover="document.getElementById('mouse').play();"><p>LUIGI CIRCUIT</p></div>
-        <div id="select" onclick="window.location.href = 'bowserCastle.html';" onmouseover="document.getElementById('mouse').play();"><p>BOWSER'S CASTLE</p></div>
-        <div id="select" onclick="window.location.href = 'rainbowRoad.html';" onmouseover="document.getElementById('mouse').play();"><p>RAINBOW ROAD</p></div>
-        <div id="select" onclick="window.location.href = 'credits.html';" onmouseover="document.getElementById('mouse').play();"><p>CREDITS</p></div>
-        <button id="mute" onclick="document.getElementById('music').pause();" onmouseover="document.getElementById('mouse').play();">Mute sound</button>
-        <button id="unmute" onclick="document.getElementById('music').play();" onmouseover="document.getElementById('mouse').play();">Unmute sound</button>
+        <div id="prix" class="select" style="background: url(textures/prix.png) no-repeat; background-size: 100% 140%; background-position: 50% 45%;" onclick="window.location.href = 'luigiCircuit.html';" onmouseover="over(this.id)" onmouseout="out(this.id)"><p>GRAND PRIX</p></div>
+        <div id="luigi" class="select" style="background: url(textures/luigi.png) no-repeat; background-size: 100% 220%; background-position: 100% 30%;" onclick="window.location.href = 'luigiCircuit.html';" onmouseover="over(this.id)" onmouseout="out(this.id)"><p>LUIGI CIRCUIT</p></div>
+        <div id="bowser" class="select" style="background: url(textures/bowser.jpg) no-repeat; background-size: 100% 220%; background-position: 100% 40%;" onclick="window.location.href = 'bowserCastle.html';" onmouseover="over(this.id)" onmouseout="out(this.id)"><p>BOWSER'S CASTLE</p></div>
+        <div id="rainbow" class="select" style="background: url(textures/rainbow.png) no-repeat; background-size: 100% 250%; background-position: 100% 30%;" onclick="window.location.href = 'rainbowRoad.html';" onmouseover="over(this.id)" onmouseout="out(this.id)"><p>RAINBOW ROAD</p></div>
+        <button id="controls" class="controls"  onclick="window.location.href = 'controls.html';" onmouseover="over(this.id)" onmouseout="out(this.id)">Game Controls</div>
+        <button id="mute" class="controls" onclick="mute(this.id);" onmouseover="over(this.id)" onmouseout="out(this.id)">Mute sound</button>
+        <button id="credits" class="controls" onclick="window.location.href = 'credits.html';" onmouseover="over(this.id)" onmouseout="out(this.id)">Credits</div>
     </div>
+
+    <script>
+        function over (id){
+            document.getElementById('mouse').play();
+            document.getElementById(id).style.color = 'red';
+        }
+        function out (id){
+            document.getElementById(id).style.color = 'black';
+        }
+        function mute(id){
+            if(document.getElementById(id).innerHTML == 'Mute sound'){
+                document.getElementById('music').pause();
+                document.getElementById(id).innerHTML = 'Unmute sound';
+            }
+            else{
+                document.getElementById('music').play();
+                document.getElementById(id).innerHTML = 'Mute sound';
+            }
+        }
+
+    </script>
 
    </body>
 
