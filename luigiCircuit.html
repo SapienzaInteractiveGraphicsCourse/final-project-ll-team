@@ -426,21 +426,56 @@
             other_street.position.z = pos_z+2;
             other_street.position.x = pos_x;
 
-            BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart/", "scene.gltf", scene).then((result) => {
-                car = result.meshes[0];
-                car.scaling = new BABYLON.Vector3(2, 2, -2);
-                car.position.x = -5;
-                car.position.y = 0.7;
-                car.rotationQuaternion = null;
-                car.rotation.y = Math.PI;
-                // the camera will follow the car with this
-                camera.lockedTarget = car;
-            });
+            if(parent.document.URL.indexOf('&') > 1)
+                var character_name = parent.document.URL.substring(parent.document.URL.indexOf('?')+11, parent.document.URL.length-1);
+            else
+                var character_name = parent.document.URL.substring(parent.document.URL.indexOf('?')+11, parent.document.URL.length);
+            if(character_name == 'mario')
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart/", "scene.gltf", scene).then((result) => {
+                    car = result.meshes[0];
+                    car.scaling = new BABYLON.Vector3(2.2, 2.2, -2.2);
+                    car.position.x = -5;
+                    car.position.y = 0.7;
+                    car.rotationQuaternion = null;
+                    car.rotation.y = Math.PI;
+                    // the camera will follow the car with this
+                    camera.lockedTarget = car;
+                });
+            else if(character_name == 'toad')
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/toad_kart/", "scene.gltf", scene).then((result) => {
+                    car = result.meshes[0];
+                    car.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car.position.x = -5;
+                    car.position.y = 0.7;
+                    car.rotationQuaternion = null;
+                    car.rotation.y = Math.PI;
+                    camera.lockedTarget = car;
+                });
+            else if(character_name == 'bowser')
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/bowserkart/", "scene.gltf", scene).then((result) => {
+                    car = result.meshes[0];
+                    car.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car.position.x = -5;
+                    car.position.y = 0.7;
+                    car.rotationQuaternion = null;
+                    car.rotation.y = Math.PI;
+                    camera.lockedTarget = car;
+                });
+            else // donkey
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/dk_kart/", "scene.gltf", scene).then((result) => {
+                    car = result.meshes[0];
+                    car.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car.position.x = -5;
+                    car.position.y = 0.7;
+                    car.rotationQuaternion = null;
+                    car.rotation.y = Math.PI;
+                    camera.lockedTarget = car;
+                });
 
             points1.push(new BABYLON.Vector3(5, 0.7, 6.67));
             BABYLON.SceneLoader.ImportMeshAsync("", "models/toad_kart/", "scene.gltf", scene).then((result) => {
                 car1 = result.meshes[0];
-                car1.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
+                car1.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
                 car1.position.x = 5;
                 car1.position.y = 0.7;
                 car1.position.z = 6.67;
@@ -451,7 +486,7 @@
             points2.push(new BABYLON.Vector3(-5, 0.7, 13.37));
             BABYLON.SceneLoader.ImportMeshAsync("", "models/bowserkart/", "scene.gltf", scene).then((result) => {
                 car2 = result.meshes[0];
-                car2.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
+                car2.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
                 car2.position.x = -5;
                 car2.position.y = 0.7;
                 car2.position.z = 13.37;
@@ -462,7 +497,7 @@
             points3.push(new BABYLON.Vector3(5, 0.7, 20));
             BABYLON.SceneLoader.ImportMeshAsync("", "models/dk_kart/", "scene.gltf", scene).then((result) => {
                 car3 = result.meshes[0];
-                car3.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
+                car3.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
                 car3.position.x = 5;
                 car3.position.y = 0.7;
                 car3.position.z = 20;
@@ -669,7 +704,7 @@
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/banana_peel_mario_kart/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.002, 0.002, 0.002);
-                    item.position.y = 3.9;
+                    item.position.y = 4.5;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
                     positiveItem = false;
@@ -709,7 +744,7 @@
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/red_shell/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.15, 0.15, 0.15);
-                    item.position.y = 3.9;
+                    item.position.y = 4.5;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
                     positiveItem = false;
@@ -749,7 +784,7 @@
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/mushroom_mario/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(1.25, 1.25, 1.25);
-                    item.position.y = 3.9;
+                    item.position.y = 4.5;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
                     positiveItem = true;
@@ -789,7 +824,7 @@
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/koopa_troopa_shell_super_mario_bros/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.005, 0.005, 0.005);
-                    item.position.y = 3.4;
+                    item.position.y = 4;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
                     item.rotationQuaternion = null;
@@ -1248,7 +1283,12 @@
                     }, 3000);
 
                     setTimeout(function(){
-                        window.location.href = "index.html";
+                        // if grandPrix, next race
+                        if(parent.document.URL.indexOf('&') > 1)
+                            window.location.href = "bowserCastle.html";
+                        // else back to menu
+                        else
+                            window.location.href = "index.html";
                     }, 5000);
                 }
 
