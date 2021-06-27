@@ -873,11 +873,16 @@
         }
 
         var lap = 1;
-        var position = 4;
+        // arrays to store the cars in front of us or behind us
+        var carsBehind = [], carsFront = [];
 
         function startRace(car) {
-            updateInfo(lap, position);
             angle = car.rotation.y - Math.PI;
+
+            // at the beginning we are 4th, therefore:
+            carsFront = [car1, car2, car3];
+            // moreover, we will always use the carsFront array to determine our position during the race, in fact:
+            updateInfo(lap, carsFront.length + 1);
 
             // these variables handle the collisions with the (horizontal/vertical) walls
             var wall_horiz1 = false, wall_horiz2 = false;
@@ -1197,6 +1202,96 @@
                     car.position.z -= 2;
                     if (item && throwed == 0) item.position.z = car.position.z;
                     wall_horiz2 = false; 
+                }
+
+                // control overtakings:
+                // 1) we actively overtake
+                for (var k=0; k<carsFront.length; k++){
+                    //console.log(k);
+                    // first straight line + beginning of the first curve: we monitor the z values
+                    if (car.position.x > -16 && car.position.x < 40) {
+                        if (car.position.z > carsFront[k].position.z && carsFront[k].position.x > -16 && carsFront[k].position.x < 40){
+                            car_overTaken = carsFront.splice(k, 1);
+                            carsBehind.push(car_overTaken[0]);
+
+                            updateInfo(lap, carsFront.length+1);
+                        }
+                        break;
+                    }
+                    // second straight line + beginning of the second curve: we monitor the x values
+                    if (car.position.z > 442 && car.position.z < 500) {
+                        if (car.position.x > carsFront[k].position.x && carsFront[k].position.z > 442 && carsFront[k].position.z < 500){
+                            car_overTaken = carsFront.splice(k, 1);
+                            carsBehind.push(car_overTaken[0]);
+
+                            updateInfo(lap, carsFront.length+1);
+                        }
+                        break;
+                    }
+                    // thrid straight line + beginning of the thrid curve: we monitor the z values
+                    if (car.position.x > 579 && car.position.x < 635) {
+                        if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 579 && carsFront[k].position.x < 635){
+                            car_overTaken = carsFront.splice(k, 1);
+                            carsBehind.push(car_overTaken[0]);
+
+                            updateInfo(lap, carsFront.length+1);
+                        }
+                        break;
+                    }
+                    // forth straight line + beginning of the forth curve: we monitor the x values
+                    if (car.position.z > -580 && car.position.z < -503) {
+                        if (car.position.x < carsFront[k].position.x && carsFront[k].position.z > -580 && carsFront[k].position.z < -503){
+                            car_overTaken = carsFront.splice(k, 1);
+                            carsBehind.push(car_overTaken[0]);
+
+                            updateInfo(lap, carsFront.length+1);
+                        }
+                        break;
+                    }
+                }
+                // 2) we are passively overtaken
+                for (var k=0; k<carsBehind.length; k++){
+                    //console.log(k);
+                    // first straight line + beginning of the first curve: we monitor the z values
+                    if (car.position.x > -16 && car.position.x < 40) {
+                        if (car.position.z < carsBehind[k].position.z && carsBehind[k].position.x > -16 && carsBehind[k].position.x < 40){
+                            car_overTaken = carsBehind.splice(k, 1);
+                            carsFront.push(car_overTaken[0]);
+
+                            updateInfo(lap, carsFront.length+1);
+                        }
+                        break;
+                    }
+                    // second straight line + beginning of the second curve: we monitor the x values
+                    if (car.position.z > 442 && car.position.z < 500) {
+                        if (car.position.x < carsBehind[k].position.x && carsBehind[k].position.z > 442 && carsBehind[k].position.z < 500){
+                            car_overTaken = carsBehind.splice(k, 1);
+                            carsFront.push(car_overTaken[0]);
+
+                            updateInfo(lap, carsFront.length+1);
+                        }
+                        break;
+                    }
+                    // thrid straight line + beginning of the thrid curve: we monitor the z values
+                    if (car.position.x > 579 && car.position.x < 635) {
+                        if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 579 && carsBehind[k].position.x < 635){
+                            car_overTaken = carsBehind.splice(k, 1);
+                            carsFront.push(car_overTaken[0]);
+
+                            updateInfo(lap, carsFront.length+1);
+                        }
+                        break;
+                    }
+                    // forth straight line + beginning of the forth curve: we monitor the x values
+                    if (car.position.z > -580 && car.position.z < -503) {
+                        if (car.position.x > carsBehind[k].position.x && carsBehind[k].position.z > -580 && carsBehind[k].position.z < -503){
+                            car_overTaken = carsBehind.splice(k, 1);
+                            carsFront.push(car_overTaken[0]);
+
+                            updateInfo(lap, carsFront.length+1);
+                        }
+                        break;
+                    }
                 }
 
                 // game loop
