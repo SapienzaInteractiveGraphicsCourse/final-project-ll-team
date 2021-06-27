@@ -3,7 +3,7 @@
 
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <title>Credits</title>
+        <title>Game Controls</title>
 
         <style>
             html, body {
@@ -12,7 +12,10 @@
                 height: 100%;
                 margin: 0;
                 padding: 0;
-                background-color:white;
+                background-image:url("textures/controls_background.jpg");
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
+                background-position-x: center;
             }
 
             #renderCanvas {
@@ -28,14 +31,11 @@
                 font-weight:1000;
                 font-size: x-large; 
                 color:white;
-                margin-top: 2%;         
-                margin-right: 10%;
-                margin-left: 70%;
+                margin-right: 6%;
+                margin-left: 74%;
                 text-align: center;
-            }
-            
-            p{
-                margin-left: 5%;
+                padding: 15px;
+                margin-top: 3.5%;
             }
         </style>
 
@@ -49,11 +49,10 @@
    <body>
 
     <audio id = "mouse" src = "sounds/mouseover.mp3"></audio>
-    <p>W, A, S and D to move</p>
-    <p>Arrow keys or mouse to move the camera</p>
-    <p>E to use the items</p>
-    <p>R to restart the race</p>
-    <div id="menu" class="menu" style="padding: 5px;" onclick="window.location.href = 'index.html';" onmouseover="over(this.id)" onmouseout="out(this.id)">Back to Main Menu</div>
+    <img style="position: absolute; margin-top: 8.5%; margin-left: 5%; width: 651.66px; height: 213.33px;" src="textures/keyboard.png" alt="keyboard">
+    <img style="margin-top: 1%; margin-left: 52%;"src="textures/mario_jump.png" alt="jumping_mario">
+
+    <div id="menu" class="menu" onclick="window.location.href = 'index.html';" onmouseover="over(this.id)" onmouseout="out(this.id)">Back to Main Menu</div>
 
     <script>
         function over (id){
