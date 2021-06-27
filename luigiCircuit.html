@@ -806,10 +806,12 @@
                     } 
                 }
                 item_name = 'mushroom';
-                BABYLON.SceneLoader.ImportMeshAsync("", "models/mushroom_mario/", "scene.gltf", scene).then((result) => {
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/power-up_mushroom/", "scene.gltf", scene).then((result) => {
                     item = result.meshes[0];
-                    item.scaling = new BABYLON.Vector3(1.25, 1.25, 1.25);
+                    item.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
                     item.position.y = 4.5;
+                    item.rotationQuaternion = null;
+                    item.rotation.y = Math.PI / 2;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
                     positiveItem = true;
