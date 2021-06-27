@@ -3,7 +3,7 @@
 
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <title>Luigi's Circuit</title>
+        <title>Luigi Circuit</title>
 
         <style>
             html, body {
@@ -26,6 +26,7 @@
         <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
         <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
         <script src="utils/earcut.min.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
     </head>
 
    <body>
@@ -55,15 +56,39 @@
             camera.attachControl(canvas, true);
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
 
-            // sky test
-            skyMat = new BABYLON.StandardMaterial("groundMat");
-            skyMat.diffuseTexture = new BABYLON.Texture("textures/bluesky.jpg");
+            // building the sky: Luigi Circuit race is during a sunny day :)
+            // Sky material
+            var skyboxMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
+            skyboxMaterial.backFaceCulling = false;
+            //skyboxMaterial._cachedDefines.FOG = true;
 
-            var skybox = BABYLON.Mesh.CreateBox('SkyBox', 1300, scene, false, BABYLON.Mesh.BACKSIDE);
-            skybox.material = skyMat;
-            skybox.position.x = 325;
-            skybox.position.z = -60;
-            skybox.position.y = 650;
+            // Sky mesh (box)
+            var skybox = BABYLON.Mesh.CreateBox("skyBox", 10000.0, scene);
+            skybox.material = skyboxMaterial;
+            
+            /*
+            * Keys:
+            * - 1: Day
+            * - 2: Evening
+            * - 3: Increase Luminance
+            * - 4: Decrease Luminance
+            * - 5: Increase Turbidity
+            * - 6: Decrease Turbidity
+            */
+            var setSkyConfig = function (property, from, to) {
+                var keys = [
+                    { frame: 0, value: from },
+                    { frame: 100, value: to }
+                ];
+                
+                var animation = new BABYLON.Animation("animation", property, 100, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                animation.setKeys(keys);
+                
+                scene.stopAnimation(skybox);
+                scene.beginDirectAnimation(skybox, [animation], 0, 100, false, 1);
+            };
+            // Set to Day
+            setSkyConfig("material.inclination", skyboxMaterial.inclination, 0);
 
             // building the ground as the base of our environment
             groundMat = new BABYLON.StandardMaterial("groundMat");
@@ -1356,7 +1381,7 @@
                                     luigiSound.play();
                                 }
                             }
-                            updateInfo(lap+1, position);
+                            updateInfo(lap+1, carsFront.length+1);
                         }
                         lap += 1;
                         half_lap = false;
