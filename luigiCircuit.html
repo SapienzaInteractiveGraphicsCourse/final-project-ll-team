@@ -1171,14 +1171,12 @@
                 // collision car-lethals loop: the car passes over a lethal item, it will do a spin (testacoda)
                 for (i=0; i<lethalItemPos.length; i++){
                     if(car.position.x < lethalItemPos[i][0]+1.5 && car.position.x > lethalItemPos[i][0]-1.5 && car.position.z < lethalItemPos[i][2]+1.5 && car.position.z > lethalItemPos[i][2]-1.5){
-                        if(character_name=='mario'){
-                            soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
-                                luigiSound.pause();
-                                soundHit.play();
-                            });
-                            soundHit.onended = function(){
-                                luigiSound.play();
-                            }
+                        soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
+                            luigiSound.pause();
+                            soundHit.play();
+                        });
+                        soundHit.onended = function(){
+                            luigiSound.play();
                         }
                         /* the spin is realized with a combination of three animations:
                          * - carRotation: 'actual' spin
