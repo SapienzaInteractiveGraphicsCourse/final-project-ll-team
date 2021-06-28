@@ -992,6 +992,10 @@
 
         function startRace(car) {
             angle = car.rotation.y - Math.PI;
+            
+            // array to store all the cars involved in the race
+            // REMEMBER: index = 0 -> our car, index > 0 -> 'enemies'
+            var carsAll = [car, car1, car2, car3];
 
             // at the beginning we are 4th, therefore:
             carsFront = [car1, car2, car3];
@@ -1113,9 +1117,10 @@
             animCarX3.setKeys(carKeysX3);
             animCarZ3.setKeys(carKeysZ3);
 
-            scene.beginDirectAnimation(car1, [animCarX1, animCarZ1, rotCar], 0, frame, true);
-            scene.beginDirectAnimation(car2, [animCarX2, animCarZ2, rotCar], 0, frame, true);
-            scene.beginDirectAnimation(car3, [animCarX3, animCarZ3, rotCar], 0, frame, true);
+            // we store the animations in some variables to use them if the computer-controlled cars hit a lethal items
+            var carAnimation1 = scene.beginDirectAnimation(car1, [animCarX1, animCarZ1, rotCar], 0, frame, true);
+            var carAnimation2 = scene.beginDirectAnimation(car2, [animCarX2, animCarZ2, rotCar], 0, frame, true);
+            var carAnimation3 = scene.beginDirectAnimation(car3, [animCarX3, animCarZ3, rotCar], 0, frame, true);
 
             
             // decomment these lines if you want to test the paths of the computer-controlled cars
@@ -1168,74 +1173,112 @@
                     }
                 }
 
-                // collision car-lethals loop: the car passes over a lethal item, it will do a spin (testacoda)
-                for (i=0; i<lethalItemPos.length; i++){
-                    if(car.position.x < lethalItemPos[i][0]+1.5 && car.position.x > lethalItemPos[i][0]-1.5 && car.position.z < lethalItemPos[i][2]+1.5 && car.position.z > lethalItemPos[i][2]-1.5){
-                        soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
-                            luigiSound.pause();
-                            soundHit.play();
-                        });
-                        soundHit.onended = function(){
-                            luigiSound.play();
-                        }
-                        /* the spin is realized with a combination of three animations:
-                         * - carRotation: 'actual' spin
-                         * - carStopx: necessary to do not move the car along the x-axis
-                         * - carStopz: necessary to do not move the car along the z-axis
-                         * without these last two, the car will proceed in its motion
-                        */
-                        // every animation is composed by key frames
-                        var carRotation = new BABYLON.Animation("carRotation", "rotation.y", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-                        const keyFramesRot = []; 
-                        
-                        var carStopx = new BABYLON.Animation("carStopx", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-                        var carStopz = new BABYLON.Animation("carStopx", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-                        const keyFramesPosx = [];
-                        const keyFramesPosz = [];
-
-                        const initial_rot = car.rotation.y;
-                        const initial_posx = car.position.x;
-                        const initial_posz = car.position.z;
-                        
-                        var spin = Math.PI;
-                        for (j=0; j<5; j++){
-                            keyFramesRot.push({
-                                frame: 5*j,
-                                value: initial_rot + spin
-                            });
-                            spin += Math.PI;
-
-                            keyFramesPosx.push({
-                                frame: 5*j,
-                                value: initial_posx
-                            });
-                            keyFramesPosz.push({
-                                frame: 5*j,
-                                value: initial_posz
-                            });
-                        }
-                        keyFramesRot.push({
-                            frame: 30,
-                            value: initial_rot
-                        })
-                    
-                        carRotation.setKeys(keyFramesRot);
-                        carStopx.setKeys(keyFramesPosx);
-                        carStopz.setKeys(keyFramesPosz);
-
-                        scene.beginDirectAnimation(car, [carRotation, carStopx, carStopz], 0, 60, false);
-                        
-                        lethalItems[i].dispose();
-                        lethalItems.splice(i, 1);
-                        lethalItemPos.splice(i, 1);
-
-                        setTimeout(function(){
-                            if(item){
-                                    item.position.z = car.position.z;
-                                    item.position.x = car.position.x;
+                // collision with lethal items
+                // we iterate over ALL the cars that can be hitten by one lethal item
+                for (var k=0; k<carsAll.length; k++){
+                    // collision car-lethals loop: the car passes over a lethal item, it will do a spin (testacoda)
+                    for (i=0; i<lethalItemPos.length; i++){
+                        if(carsAll[k].position.x < lethalItemPos[i][0]+1.5 && carsAll[k].position.x > lethalItemPos[i][0]-1.5 && carsAll[k].position.z < lethalItemPos[i][2]+1.5 && carsAll[k].position.z > lethalItemPos[i][2]-1.5){
+                            // our car
+                            console.log('hitten! ', k);
+                            if (k == 0){
+                                soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
+                                    luigiSound.pause();
+                                    soundHit.play();
+                                });
+                                soundHit.onended = function(){
+                                    luigiSound.play();
+                                }
                             }
-                        }, 3000);
-                        break;
+                            /* the spin is realized with a combination of three animations:
+                            * - carRotation: 'actual' spin
+                            * - carStopx: necessary to do not move the car along the x-axis
+                            * - carStopz: necessary to do not move the car along the z-axis
+                            * without these last two, the car will proceed in its motion
+                            */
+                            // every animation is composed by key frames
+                            var carRotation = new BABYLON.Animation("carRotation", "rotation.y", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                            const keyFramesRot = []; 
+                            
+                            var carStopx = new BABYLON.Animation("carStopx", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                            var carStopz = new BABYLON.Animation("carStopx", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                            const keyFramesPosx = [];
+                            const keyFramesPosz = [];
+
+                            const initial_rot = carsAll[k].rotation.y;
+                            const initial_posx = carsAll[k].position.x;
+                            const initial_posz = carsAll[k].position.z;
+                            
+                            var spin = Math.PI;
+                            for (j=0; j<5; j++){
+                                keyFramesRot.push({
+                                    frame: 5*j,
+                                    value: initial_rot + spin
+                                });
+                                spin += Math.PI;
+
+                                keyFramesPosx.push({
+                                    frame: 5*j,
+                                    value: initial_posx
+                                });
+                                keyFramesPosz.push({
+                                    frame: 5*j,
+                                    value: initial_posz
+                                });
+                            }
+                            keyFramesRot.push({
+                                frame: 30,
+                                value: initial_rot
+                            })
+                        
+                            carRotation.setKeys(keyFramesRot);
+                            carStopx.setKeys(keyFramesPosx);
+                            carStopz.setKeys(keyFramesPosz);
+
+                            // for our car we only need to start the animation of the spin ...
+                            if (k == 0) scene.beginDirectAnimation(car, [carRotation, carStopx, carStopz], 0, 60, false);
+                            // ... while for all the others, we need to pause their motion animations, start the spin and then
+                            // we resume their motion AFTER (!!!) the end of the spin -> async + await
+                            else if (k == 1){
+                                carAnimation1.pause()
+                                setTimeout(async () => {
+                                    var anim = scene.beginDirectAnimation(car1, [carRotation, carStopx, carStopz], 0, 60, false);
+                                    await anim.waitAsync();
+                                    carAnimation1.restart();
+                                });
+                            }
+                            else if (k == 2){
+                                carAnimation2.pause()
+                                setTimeout(async () => {
+                                    var anim = scene.beginDirectAnimation(car2, [carRotation, carStopx, carStopz], 0, 60, false);
+                                    await anim.waitAsync();
+                                    carAnimation2.restart();
+                                });
+                            }
+                            else {
+                                carAnimation3.pause()
+                                setTimeout(async () => {
+                                    var anim = scene.beginDirectAnimation(car3, [carRotation, carStopx, carStopz], 0, 60, false);
+                                    await anim.waitAsync();
+                                    carAnimation3.restart();
+                                });
+                            }
+
+                            lethalItems[i].dispose();
+                            lethalItems.splice(i, 1);
+                            lethalItemPos.splice(i, 1);
+
+                            // only our car has the item
+                            if (k == 0){
+                                setTimeout(function(){
+                                    if(item){
+                                            item.position.z = car.position.z;
+                                            item.position.x = car.position.x;
+                                    }
+                                }, 3000);
+                            }
+                            break;
+                        }
                     }
                 }
 
@@ -1331,37 +1374,33 @@
 
                             updateInfo(lap, carsFront.length+1);
                         }
-                        break;
                     }
                     // second straight line + beginning of the second curve: we monitor the x values
-                    if (car.position.z > 442 && car.position.z < 500) {
+                    else if (car.position.z > 442 && car.position.z < 500) {
                         if (car.position.x > carsFront[k].position.x && carsFront[k].position.z > 442 && carsFront[k].position.z < 500){
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
                             updateInfo(lap, carsFront.length+1);
                         }
-                        break;
                     }
                     // thrid straight line + beginning of the thrid curve: we monitor the z values
-                    if (car.position.x > 579 && car.position.x < 635) {
+                    else if (car.position.x > 579 && car.position.x < 635) {
                         if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 579 && carsFront[k].position.x < 635){
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
                             updateInfo(lap, carsFront.length+1);
                         }
-                        break;
                     }
                     // forth straight line + beginning of the forth curve: we monitor the x values
-                    if (car.position.z > -580 && car.position.z < -503) {
+                    else if (car.position.z > -580 && car.position.z < -503) {
                         if (car.position.x < carsFront[k].position.x && carsFront[k].position.z > -580 && carsFront[k].position.z < -503){
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
                             updateInfo(lap, carsFront.length+1);
                         }
-                        break;
                     }
                 }
                 // 2) we are passively overtaken
@@ -1375,37 +1414,33 @@
 
                             updateInfo(lap, carsFront.length+1);
                         }
-                        break;
                     }
                     // second straight line + beginning of the second curve: we monitor the x values
-                    if (car.position.z > 442 && car.position.z < 500) {
+                    else if (car.position.z > 442 && car.position.z < 500) {
                         if (car.position.x < carsBehind[k].position.x && carsBehind[k].position.z > 442 && carsBehind[k].position.z < 500){
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
                             updateInfo(lap, carsFront.length+1);
                         }
-                        break;
                     }
                     // thrid straight line + beginning of the thrid curve: we monitor the z values
-                    if (car.position.x > 579 && car.position.x < 635) {
+                    else if (car.position.x > 579 && car.position.x < 635) {
                         if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 579 && carsBehind[k].position.x < 635){
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
                             updateInfo(lap, carsFront.length+1);
                         }
-                        break;
                     }
                     // forth straight line + beginning of the forth curve: we monitor the x values
-                    if (car.position.z > -580 && car.position.z < -503) {
+                    else if (car.position.z > -580 && car.position.z < -503) {
                         if (car.position.x > carsBehind[k].position.x && carsBehind[k].position.z > -580 && carsBehind[k].position.z < -503){
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
                             updateInfo(lap, carsFront.length+1);
                         }
-                        break;
                     }
                 }
 
