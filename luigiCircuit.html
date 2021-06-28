@@ -1180,7 +1180,7 @@
                     for (i=0; i<lethalItemPos.length; i++){
                         if(carsAll[k].position.x < lethalItemPos[i][0]+1.5 && carsAll[k].position.x > lethalItemPos[i][0]-1.5 && carsAll[k].position.z < lethalItemPos[i][2]+1.5 && carsAll[k].position.z > lethalItemPos[i][2]-1.5){
                             // our car
-                            console.log('hitten! ', k);
+                            //console.log('hitten! ', k);
                             if (k == 0){
                                 soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
                                     luigiSound.pause();
@@ -1282,16 +1282,37 @@
                     }
                 }
 
-                // collision car-goods: the car passes over a positive item (aka a mushroom), it will accelerate
-                for (i=0; i<goodItemPos.length; i++){
-                    if(car.position.x < goodItemPos[i][0]+0.8 && car.position.x > goodItemPos[i][0]-0.8 && car.position.z < goodItemPos[i][2]+0.8 && car.position.z > goodItemPos[i][2]-0.8){
-                        sprint = 1;
-                        
-                        goodItems[i].dispose();
-                        goodItems.splice(i, 1);
-                        goodItemPos.splice(i, 1);
+                // collision with good items (aka mushrooms)
+                // we iterate over ALL the cars that can pass over one mushroom
+                // for simplicity, only our car will do the sprint given by the item
+                for (var k=0; k<carsAll.length; k++){
+                    // collision car-goods: the car passes over a positive item (aka a mushroom), it will accelerate
+                    for (i=0; i<goodItemPos.length; i++){
+                        if(carsAll[k].position.x < goodItemPos[i][0]+0.8 && carsAll[k].position.x > goodItemPos[i][0]-0.8 && carsAll[k].position.z < goodItemPos[i][2]+0.8 && carsAll[k].position.z > goodItemPos[i][2]-0.8){
+                            // our car
+                            //console.log('mushroom ', k);
+                            if (k == 0) {
+                                // play the mushroom sound
+                                const soundMush = new BABYLON.Sound("soundMush", "sounds/mushroom.mp3", scene, function(){
+                                    soundMush.play();
+                                });
+                                var repeat = true;
+                                soundMush.onended = function(){
+                                    if (repeat){
+                                        soundMush.play();
+                                        repeat = false;
+                                    }
+                                }
+                                
+                                sprint = 1;
+                            }
 
-                        break;
+                            goodItems[i].dispose();
+                            goodItems.splice(i, 1);
+                            goodItemPos.splice(i, 1);
+
+                            break;
+                        }
                     }
                 }
 
@@ -1592,7 +1613,7 @@
                             case "E":
                                 if (item && (item.position.y == 4 || item.position.y == 4.5)){
                                     if(this.item_name == 'banana'){
-                                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mouseover.mp3", scene, function(){
+                                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mk64_banana.wav", scene, function(){
                                             soundDrop.play();
                                         });
                                         item.position.y = 0.95;
