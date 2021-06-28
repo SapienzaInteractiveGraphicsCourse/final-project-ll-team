@@ -4,6 +4,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title>Luigi Circuit</title>
+        <link rel="icon" href="textures/mario_head.png" type="image/png" />
 
         <style>
             html, body {
@@ -48,6 +49,11 @@
         var points1 = [], points2 = [], points3 = [];
 
         var groundMat, streetMat, bleachersMat;
+        
+        if(parent.document.URL.indexOf('&') > 1)
+                var character_name = parent.document.URL.substring(parent.document.URL.indexOf('?')+11, parent.document.URL.length-1);
+        else
+            var character_name = parent.document.URL.substring(parent.document.URL.indexOf('?')+11, parent.document.URL.length);
 
         const createScene = () => {
             
@@ -450,11 +456,8 @@
             other_street.material = streetMat;
             other_street.position.z = pos_z+2;
             other_street.position.x = pos_x;
-
-            if(parent.document.URL.indexOf('&') > 1)
-                var character_name = parent.document.URL.substring(parent.document.URL.indexOf('?')+11, parent.document.URL.length-1);
-            else
-                var character_name = parent.document.URL.substring(parent.document.URL.indexOf('?')+11, parent.document.URL.length);
+            
+            // user's car
             if(character_name == 'mario')
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart/", "scene.gltf", scene).then((result) => {
                     car = result.meshes[0];
@@ -496,39 +499,79 @@
                     car.rotation.y = Math.PI;
                     camera.lockedTarget = car;
                 });
-
+            
+            // three cpu's cars
             points1.push(new BABYLON.Vector3(5, 0.7, 6.67));
-            BABYLON.SceneLoader.ImportMeshAsync("", "models/toad_kart/", "scene.gltf", scene).then((result) => {
-                car1 = result.meshes[0];
-                car1.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
-                car1.position.x = 5;
-                car1.position.y = 0.7;
-                car1.position.z = 6.67;
-                car1.rotationQuaternion = null;
-                car1.rotation.y = Math.PI;
-            });
+            if(character_name!='toad'){
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/toad_kart/", "scene.gltf", scene).then((result) => {
+                    car1 = result.meshes[0];
+                    car1.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car1.position.x = 5;
+                    car1.position.y = 0.7;
+                    car1.position.z = 6.67;
+                    car1.rotationQuaternion = null;
+                    car1.rotation.y = Math.PI;
+                });
+            }
+            else{
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart/", "scene.gltf", scene).then((result) => {
+                    car1 = result.meshes[0];
+                    car1.scaling = new BABYLON.Vector3(2.2, 2.2, -2.2);
+                    car1.position.x = 5;
+                    car1.position.y = 0.7;
+                    car1.position.z = 6.67;
+                    car1.rotationQuaternion = null;
+                    car1.rotation.y = Math.PI;
+                });
+            }
 
             points2.push(new BABYLON.Vector3(-5, 0.7, 13.37));
-            BABYLON.SceneLoader.ImportMeshAsync("", "models/bowserkart/", "scene.gltf", scene).then((result) => {
-                car2 = result.meshes[0];
-                car2.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
-                car2.position.x = -5;
-                car2.position.y = 0.7;
-                car2.position.z = 13.37;
-                car2.rotationQuaternion = null;
-                car2.rotation.y = Math.PI;
-            });
+            if(character_name!='bowser'){
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/bowserkart/", "scene.gltf", scene).then((result) => {
+                    car2 = result.meshes[0];
+                    car2.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car2.position.x = -5;
+                    car2.position.y = 0.7;
+                    car2.position.z = 13.37;
+                    car2.rotationQuaternion = null;
+                    car2.rotation.y = Math.PI;
+                });
+            }
+            else{
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart/", "scene.gltf", scene).then((result) => {
+                    car2 = result.meshes[0];
+                    car2.scaling = new BABYLON.Vector3(2.2, 2.2, -2.2);
+                    car2.position.x = -5;
+                    car2.position.y = 0.7;
+                    car2.position.z = 13.37;
+                    car2.rotationQuaternion = null;
+                    car2.rotation.y = Math.PI;
+                });
+            }
 
             points3.push(new BABYLON.Vector3(5, 0.7, 20));
-            BABYLON.SceneLoader.ImportMeshAsync("", "models/dk_kart/", "scene.gltf", scene).then((result) => {
-                car3 = result.meshes[0];
-                car3.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
-                car3.position.x = 5;
-                car3.position.y = 0.7;
-                car3.position.z = 20;
-                car3.rotationQuaternion = null;
-                car3.rotation.y = Math.PI;
-            });
+            if(character_name!='donkey'){ 
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/dk_kart/", "scene.gltf", scene).then((result) => {
+                    car3 = result.meshes[0];
+                    car3.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car3.position.x = 5;
+                    car3.position.y = 0.7;
+                    car3.position.z = 20;
+                    car3.rotationQuaternion = null;
+                    car3.rotation.y = Math.PI;
+                });
+            }
+            else{
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/mario_kart/", "scene.gltf", scene).then((result) => {
+                    car3 = result.meshes[0];
+                    car3.scaling = new BABYLON.Vector3(2.2, 2.2, -2.2);
+                    car3.position.x = 5;
+                    car3.position.y = 0.7;
+                    car3.position.z = 20;
+                    car3.rotationQuaternion = null;
+                    car3.rotation.y = Math.PI;
+                });
+            }
 
             // these functions are asynchronous, we need to pay attention in the pushes
             createItemBoxLine(scene, [-7, 1, 130], true, false);
@@ -726,13 +769,24 @@
                     }
                 }
                 item_name = 'banana';
+                const soundItems = new BABYLON.Sound("soundItems", "sounds/items.mp3", scene, function(){
+                    soundItems.play();
+                });
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/banana_peel_mario_kart/", "scene.gltf", scene).then((result) => {
+                    if(previous_item){
+                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mouseover.mp3", scene, function(){
+                            soundDrop.play();
+                        });
+                    }
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.002, 0.002, 0.002);
-                    item.position.y = 4.5;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
+                    item.position.y = -4.5;
                     positiveItem = false;
+                    soundItems.onended = function(){
+                        item.position.y = 4.5;
+                    }
                 });
             }
             else if (name == 'red_shell'){
@@ -766,13 +820,24 @@
                     }
                 }
                 item_name = 'red_shell';
+                const soundItems = new BABYLON.Sound("soundItems", "sounds/items.mp3", scene, function(){
+                    soundItems.play();
+                });
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/red_shell/", "scene.gltf", scene).then((result) => {
+                    if(previous_item){
+                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mouseover.mp3", scene, function(){
+                            soundDrop.play();
+                        });
+                    }
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.15, 0.15, 0.15);
-                    item.position.y = 4.5;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
+                    item.position.y = -4.5;
                     positiveItem = false;
+                    soundItems.onended = function(){
+                        item.position.y = 4.5;
+                    }
                 });
             }
             else if (name == 'mushroom'){
@@ -806,15 +871,26 @@
                     } 
                 }
                 item_name = 'mushroom';
+                const soundItems = new BABYLON.Sound("soundItems", "sounds/items.mp3", scene, function(){
+                    soundItems.play();
+                });
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/power-up_mushroom/", "scene.gltf", scene).then((result) => {
+                    if(previous_item){
+                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mouseover.mp3", scene, function(){
+                            soundDrop.play();
+                        });
+                    }
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
-                    item.position.y = 4.5;
+                    item.position.y = -4.5;
                     item.rotationQuaternion = null;
                     item.rotation.y = Math.PI / 2;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
                     positiveItem = true;
+                    soundItems.onended = function(){
+                        item.position.y = 4.5;
+                    }
                 });
             }
             else if (name == 'green_shell'){
@@ -848,15 +924,26 @@
                     } 
                 }
                 item_name = 'green_shell';
+                const soundItems = new BABYLON.Sound("soundItems", "sounds/items.mp3", scene, function(){
+                    soundItems.play();
+                });
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/koopa_troopa_shell_super_mario_bros/", "scene.gltf", scene).then((result) => {
+                    if(previous_item){
+                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mouseover.mp3", scene, function(){
+                            soundDrop.play();
+                        });
+                    }
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.005, 0.005, 0.005);
-                    item.position.y = 4;
+                    item.position.y = -4.5;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
                     item.rotationQuaternion = null;
                     item.rotation.y = Math.PI / 2;
                     positiveItem = false;
+                    soundItems.onended = function(){
+                        item.position.y = 4;
+                    }
                 });
             }
             else {
@@ -920,7 +1007,8 @@
             // let's start the soundtrack of the Luigi's Circuit
             const luigiSound = new BABYLON.Sound("luigiSound", "sounds/mk64_luigicircuit.mp3", scene, null, {
                 loop: true,
-                autoplay: true 
+                autoplay: true,
+                volume: 0.2
             });
 
             // here we handle the animation of the other three cars in the race
@@ -1057,7 +1145,6 @@
                     if(car.position.x < itemBoxPos[i][0]+1.5 && car.position.x > itemBoxPos[i][0]-1.5 && car.position.z < itemBoxPos[i][2]+1.5 && car.position.z > itemBoxPos[i][2]-1.5){
                         if(item)
                             item.position.y = 0.95;
-
                         // we have four items randomly chosen
                         throwed = 0;
                         if(Math.random()<0.25)
@@ -1084,12 +1171,14 @@
                 // collision car-lethals loop: the car passes over a lethal item, it will do a spin (testacoda)
                 for (i=0; i<lethalItemPos.length; i++){
                     if(car.position.x < lethalItemPos[i][0]+1.5 && car.position.x > lethalItemPos[i][0]-1.5 && car.position.z < lethalItemPos[i][2]+1.5 && car.position.z > lethalItemPos[i][2]-1.5){
-                        soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
-                            luigiSound.pause();
-                            soundHit.play();
-                        });
-                        soundHit.onended = function(){
-                            luigiSound.play();
+                        if(character_name=='mario'){
+                            soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
+                                luigiSound.pause();
+                                soundHit.play();
+                            });
+                            soundHit.onended = function(){
+                                luigiSound.play();
+                            }
                         }
                         /* the spin is realized with a combination of three animations:
                          * - carRotation: 'actual' spin
@@ -1468,8 +1557,11 @@
                             break
                             case "e":
                             case "E":
-                                if (item){
+                                if (item && (item.position.y == 4 || item.position.y == 4.5)){
                                     if(this.item_name == 'banana'){
+                                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mouseover.mp3", scene, function(){
+                                            soundDrop.play();
+                                        });
                                         item.position.y = 0.95;
                                         posx = item.position.x;
                                         posy = item.position.y;
@@ -1486,14 +1578,30 @@
 
                                     }
                                     else if (this.item_name == 'red_shell'){
+                                        const soundShell = new BABYLON.Sound("soundShell", "sounds/shell.mp3", scene, function(){
+                                            soundShell.play();
+                                        });
                                         item.position.y = 0.95;
                                         throwed = 0.8;
                                     }
                                     else if (this.item_name == 'green_shell'){
+                                        const soundShell = new BABYLON.Sound("soundShell", "sounds/shell.mp3", scene, function(){
+                                            soundShell.play();
+                                        });
                                         item.position.y = 0.95;
                                         throwed = 0.8;
                                     }
                                     else if (this.item_name == 'mushroom'){
+                                        const soundMush = new BABYLON.Sound("soundMush", "sounds/mushroom.mp3", scene, function(){
+                                            soundMush.play();
+                                        });
+                                        var repeat = true;
+                                        soundMush.onended = function(){
+                                            if (repeat){
+                                                soundMush.play();
+                                                repeat = false;
+                                            }
+                                        }
                                         sprint = 1;
                                         item.dispose();
                                         item = null;
