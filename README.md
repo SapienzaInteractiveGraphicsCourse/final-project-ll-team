@@ -40,9 +40,17 @@ We provide two race modalities that the user can select:
 
 The user is free to select one of the four players provided in the game. We offer the possibility to choose between some of the most loved *Mario Kart* icons:
 - **Mario**;
+
+![mario](./images/mario.png)
 - **Toad**;
+
+![toad](./images/toad.png)
 - **Bowser**;
+
+![bowser](./images/bowser.png)
 - **Donkey Kong**.
+
+![donkey kong](./images/donkey_kong.png)
 
 ### Start the game
 
