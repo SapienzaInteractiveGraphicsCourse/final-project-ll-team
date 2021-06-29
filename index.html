@@ -78,8 +78,7 @@
 
     <audio onended="window.location.href = 'gameSelection.html';" id = "letsgo" src = "sounds/letsgo.mp3"></audio>
 
-    <p style="margin-left: 8%; background-color:white; margin-right: 57%; text-align: center; font-weight: 700;">Please, if possible access with Google Chrome browser for a better experience.</p>
-    <p class="title">BabylonJS Mario Kart</p>
+    <p style="margin-top: 5.05%;" class="title">BabylonJS Mario Kart</p>
     <div id="yes" class="select" onclick="document.getElementById('letsgo').play();" onmouseover="over(this.id)" onmouseout="out(this.id)"><p>PLAY!</p></div>
 
     <div><button id="controls" class="controls" style="margin-top: 1%;" onclick="window.location.href = 'controls.html';" onmouseover="over(this.id)" onmouseout="out(this.id)">Game controls</button></div>
@@ -88,6 +87,21 @@
     
 
     <script>
+        var browser = (function (agent) {
+            switch (true) {
+                case agent.indexOf("edge") > -1: return "MS Edge (EdgeHtml)";
+                case agent.indexOf("edg") > -1: return "MS Edge Chromium";
+                case agent.indexOf("opr") > -1 && !!window.opr: return "opera";
+                case agent.indexOf("chrome") > -1 && !!window.chrome: return "chrome";
+                case agent.indexOf("trident") > -1: return "Internet Explorer";
+                case agent.indexOf("firefox") > -1: return "firefox";
+                case agent.indexOf("safari") > -1: return "safari";
+                default: return "other";
+            }
+        })(window.navigator.userAgent.toLowerCase());
+        if(browser != 'chrome')
+            alert('Please, if possible access with Google Chrome browser for a better experience.');
+
 
         function over (id){
             document.getElementById('mouse').play();
