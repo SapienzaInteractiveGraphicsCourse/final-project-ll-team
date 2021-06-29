@@ -49,7 +49,8 @@
         var points1 = [], points2 = [], points3 = [];
 
         var groundMat, streetMat, bleachersMat;
-        
+        var update_done = false;
+
         if(parent.document.URL.indexOf('&') > 1){
                 var character_name = parent.document.URL.substring(parent.document.URL.indexOf('?')+11, parent.document.URL.indexOf('&'));
                 var score = parseInt(parent.document.URL.substring(parent.document.URL.indexOf('&')+7, parent.document.URL.length));
@@ -1591,15 +1592,17 @@
                     }, 3000);
 
                     final_position = carsFront.length+1;
-                    if(final_position == 1)
-                        score += 15;
-                    else if(final_position == 2)
-                        score += 10;
-                    else if(final_position == 3)
-                        score += 5;
-                    else
-                        score += 0;
-
+                    if(!update_done){
+                        update_done = true
+                        if(final_position == 1)
+                            score += 15;
+                        else if(final_position == 2)
+                            score += 10;
+                        else if(final_position == 3)
+                            score += 5;
+                        else
+                            score += 0;
+                    }
                     setTimeout(function(){
                         // if grandPrix, next race
                         if(parent.document.URL.indexOf('&') > 1)
