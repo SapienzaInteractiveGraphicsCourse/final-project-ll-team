@@ -1144,9 +1144,10 @@
 
             // we store the animations in some variables to use them if the computer-controlled cars hit a lethal items
             var carAnimation1 = scene.beginDirectAnimation(car1, [animCarX1, animCarZ1, rotCar], 0, frame, true);
+            carAnimation1.speedRatio *= 0.97;
             var carAnimation2 = scene.beginDirectAnimation(car2, [animCarX2, animCarZ2, rotCar], 0, frame, true);
+            carAnimation2.speedRatio *= 1.03;
             var carAnimation3 = scene.beginDirectAnimation(car3, [animCarX3, animCarZ3, rotCar], 0, frame, true);
-
             
             // decomment these lines if you want to test the paths of the computer-controlled cars
             // Creation of a lines mesh
