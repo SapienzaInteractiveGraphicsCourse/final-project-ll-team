@@ -971,7 +971,21 @@
             return impedance;
         }
 
-        function updateInfo(lap, position, raceTime) {
+        var lap = 1;
+        // arrays to store the cars in front of us or behind us
+        var carsBehind = [], carsFront = [];
+
+        function startRace(car) {
+            var startTime = new Date().getTime();
+            angle = car.rotation.y - Math.PI;
+
+            // array to store all the cars involved in the race
+            // REMEMBER: index = 0 -> our car, index > 0 -> 'enemies'
+            var carsAll = [car, car1, car2, car3];
+
+            // at the beginning we are 4th, therefore:
+            carsFront = [car1, car2, car3];
+            // moreover, we will always use the carsFront array to determine our position during the race, in fact:
             var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
             let x1 = new BABYLON.GUI.TextBlock('TextBlock', ''); 
@@ -1010,26 +1024,8 @@
             advancedTexture.addControl(rect2);
             rect2.addControl(x2);
 
-            x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(raceTime);
-            x2.text = 'Position: ' + String(position);
-        }
-
-        var lap = 1;
-        // arrays to store the cars in front of us or behind us
-        var carsBehind = [], carsFront = [];
-
-        function startRace(car) {
-            var startTime = new Date().getTime();
-            angle = car.rotation.y - Math.PI;
-            
-            // array to store all the cars involved in the race
-            // REMEMBER: index = 0 -> our car, index > 0 -> 'enemies'
-            var carsAll = [car, car1, car2, car3];
-
-            // at the beginning we are 4th, therefore:
-            carsFront = [car1, car2, car3];
-            // moreover, we will always use the carsFront array to determine our position during the race, in fact:
-            updateInfo(lap, carsFront.length + 1, 0);
+            x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(0);
+            x2.text = 'Position: ' + String(carsFront.length + 1);
 
             // these variables handle the collisions with the (horizontal/vertical) walls
             var wall_horiz1 = false, wall_horiz2 = false;
@@ -1173,10 +1169,9 @@
 
             // 2053ms to give it a "random" feeling
             // update every 2 seconds not to kill the game
-            var timer = setInterval(function(){ updateInfo(lap, carsFront.length+1, raceTime); }, 2053);
-
-            // angle to correct the direction of a throwed red shell that has to follow an enemy
-            var alpha = 0;
+            var timer = setInterval(function(){ 
+                x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(raceTime);
+            }, 10);
 
             scene.registerBeforeRender(function () {
                 var currentTime = new Date().getTime();
@@ -1433,7 +1428,7 @@
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1, raceTime);
+                            x2.text = 'Position: ' + String(carsFront.length + 1);
                         }
                     }
                     // second straight line + beginning of the second curve: we monitor the x values
@@ -1442,7 +1437,7 @@
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1, raceTime);
+                            x2.text = 'Position: ' + String(carsFront.length + 1);
                         }
                     }
                     // thrid straight line + beginning of the thrid curve: we monitor the z values
@@ -1451,7 +1446,7 @@
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1, raceTime);
+                            x2.text = 'Position: ' + String(carsFront.length + 1);
                         }
                     }
                     // forth straight line + beginning of the forth curve: we monitor the x values
@@ -1460,7 +1455,7 @@
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1, raceTime);
+                            x2.text = 'Position: ' + String(carsFront.length + 1);
                         }
                     }
                 }
@@ -1472,7 +1467,7 @@
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1, raceTime);
+                            x2.text = 'Position: ' + String(carsFront.length + 1);
                         }
                     }
                     // second straight line + beginning of the second curve: we monitor the x values
@@ -1481,8 +1476,7 @@
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1, raceTime);
-                        }
+                            x2.text = 'Position: ' + String(carsFront.length + 1);                        }
                     }
                     // thrid straight line + beginning of the thrid curve: we monitor the z values
                     else if (car.position.x > 579 && car.position.x < 635) {
@@ -1490,8 +1484,7 @@
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1, raceTime);
-                        }
+                            x2.text = 'Position: ' + String(carsFront.length + 1);                        }
                     }
                     // forth straight line + beginning of the forth curve: we monitor the x values
                     else if (car.position.z > -580 && car.position.z < -503) {
@@ -1499,8 +1492,7 @@
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1, raceTime);
-                        }
+                            x2.text = 'Position: ' + String(carsFront.length + 1);                        }
                     }
                 }
 
@@ -1519,8 +1511,8 @@
                             last_angle = angle;
                         }
                         else{
-                            item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(last_angle + alpha);
-                            item.position.x += (0.5 + throwed + sprint - impedance) * Math.sin(last_angle + alpha);
+                            item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(last_angle);
+                            item.position.x += (0.5 + throwed + sprint - impedance) * Math.sin(last_angle);
                         }
                                       
                     }
@@ -1568,7 +1560,7 @@
                                     luigiSound.play();
                                 }
                             }
-                            updateInfo(lap+1, carsFront.length+1, raceTime);
+                            x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(raceTime);
                         }
                         lap += 1;
                         car.rotation.y = Math.PI;
