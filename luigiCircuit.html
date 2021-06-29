@@ -964,26 +964,47 @@
             return impedance;
         }
 
-        function updateInfo(lap, position) {
+        function updateInfo(lap, position, raceTime) {
             var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
-            let x = new BABYLON.GUI.TextBlock('TextBlock', '120'); 
-            x.fontSize = 60;
-            x.fontFamily = "impact";
-            x.color = "yellow";
+            let x1 = new BABYLON.GUI.TextBlock('TextBlock', ''); 
+            x1.fontSize = 50;
+            x1.fontFamily = "impact";
+            x1.color = "yellow";
             var rect1 = new BABYLON.GUI.Rectangle();
-            rect1.width = 0.25;
+            rect1.width = 0.23;
+            rect1.height = 0.21;
+            rect1.paddingTop = '3%';
+            rect1.paddingRight = '3%';
             rect1.horizontalAlignment = 1;
             rect1.verticalAlignment = 0;
-            rect1.height = "150px";
             rect1.cornerRadius = 10;
             rect1.color = "black";
             rect1.thickness = 4;
-            rect1.background = "grey";
+            rect1.background = "blue";
             advancedTexture.addControl(rect1);
-            rect1.addControl(x);
+            rect1.addControl(x1);
 
-            x.text = 'Lap ' + String(lap) + '/3' + '\n Position: ' + String(position);
+            let x2 = new BABYLON.GUI.TextBlock('TextBlock', ''); 
+            x2.fontSize = 50;
+            x2.fontFamily = "impact";
+            x2.color = "yellow";
+            var rect2 = new BABYLON.GUI.Rectangle();
+            rect2.width = 0.18;
+            rect2.height = 0.13;
+            rect2.paddingBottom = '3%';
+            rect2.paddingLeft = '3%';
+            rect2.horizontalAlignment = 0;
+            rect2.verticalAlignment = 1;
+            rect2.cornerRadius = 10;
+            rect2.color = "black";
+            rect2.thickness = 4;
+            rect2.background = "blue";
+            advancedTexture.addControl(rect2);
+            rect2.addControl(x2);
+
+            x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(raceTime);
+            x2.text = 'Position: ' + String(position);
         }
 
         var lap = 1;
@@ -991,6 +1012,7 @@
         var carsBehind = [], carsFront = [];
 
         function startRace(car) {
+            var startTime = new Date().getTime();
             angle = car.rotation.y - Math.PI;
             
             // array to store all the cars involved in the race
@@ -1000,7 +1022,7 @@
             // at the beginning we are 4th, therefore:
             carsFront = [car1, car2, car3];
             // moreover, we will always use the carsFront array to determine our position during the race, in fact:
-            updateInfo(lap, carsFront.length + 1);
+            updateInfo(lap, carsFront.length + 1, 0);
 
             // these variables handle the collisions with the (horizontal/vertical) walls
             var wall_horiz1 = false, wall_horiz2 = false;
@@ -1142,9 +1164,14 @@
             // ensures that the user actually follows the track
             var half_lap = false;
 
-            scene.registerBeforeRender(function () {
-                impedance = setImpedance(car);
+            // 2053ms to give it a "random" feeling
+            // update every 2 seconds not to kill the game
+            var timer = setInterval(function(){ updateInfo(lap, carsFront.length+1, raceTime); }, 2053);
 
+            scene.registerBeforeRender(function () {
+                var currentTime = new Date().getTime();
+                raceTime = (currentTime - startTime)/1000;
+                impedance = setImpedance(car);
                 // collision car-itembox loop
                 for (i=0; i<itemBoxPos.length; i++){
                     if(car.position.x < itemBoxPos[i][0]+1.5 && car.position.x > itemBoxPos[i][0]-1.5 && car.position.z < itemBoxPos[i][2]+1.5 && car.position.z > itemBoxPos[i][2]-1.5){
@@ -1156,7 +1183,6 @@
                             createItem('red_shell');
                         
                         else if(Math.random()<0.5)
-                            
                             createItem('banana');
                         
                         else if(Math.random()<0.75)
@@ -1181,7 +1207,6 @@
                         if((carsAll[k].position.x < lethalItemPos[i][0]+1.5 && carsAll[k].position.x > lethalItemPos[i][0]-1.5 && carsAll[k].position.z < lethalItemPos[i][2]+1.5 && carsAll[k].position.z > lethalItemPos[i][2]-1.5)
                             || (k>0 && item && throwed > 0 && carsAll[k].position.x < item.position.x+4 && carsAll[k].position.x > item.position.x-4 && carsAll[k].position.z < item.position.z+4 && carsAll[k].position.z > item.position.z-4)){
                             // our car
-                            console.log('hitten! ', k);
                             if (k == 0){
                                 soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
                                     luigiSound.pause();
@@ -1291,7 +1316,6 @@
                     for (i=0; i<goodItemPos.length; i++){
                         if(carsAll[k].position.x < goodItemPos[i][0]+0.8 && carsAll[k].position.x > goodItemPos[i][0]-0.8 && carsAll[k].position.z < goodItemPos[i][2]+0.8 && carsAll[k].position.z > goodItemPos[i][2]-0.8){
                             // our car
-                            //console.log('mushroom ', k);
                             if (k == 0) {
                                 // play the mushroom sound
                                 const soundMush = new BABYLON.Sound("soundMush", "sounds/mushroom.mp3", scene, function(){
@@ -1387,14 +1411,13 @@
                 // control overtakings:
                 // 1) we actively overtake
                 for (var k=0; k<carsFront.length; k++){
-                    //console.log(k);
                     // first straight line + beginning of the first curve: we monitor the z values
                     if (car.position.x > -16 && car.position.x < 40) {
                         if (car.position.z > carsFront[k].position.z && carsFront[k].position.x > -16 && carsFront[k].position.x < 40){
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1);
+                            updateInfo(lap, carsFront.length+1, raceTime);
                         }
                     }
                     // second straight line + beginning of the second curve: we monitor the x values
@@ -1403,7 +1426,7 @@
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1);
+                            updateInfo(lap, carsFront.length+1, raceTime);
                         }
                     }
                     // thrid straight line + beginning of the thrid curve: we monitor the z values
@@ -1412,7 +1435,7 @@
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1);
+                            updateInfo(lap, carsFront.length+1, raceTime);
                         }
                     }
                     // forth straight line + beginning of the forth curve: we monitor the x values
@@ -1421,20 +1444,19 @@
                             car_overTaken = carsFront.splice(k, 1);
                             carsBehind.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1);
+                            updateInfo(lap, carsFront.length+1, raceTime);
                         }
                     }
                 }
                 // 2) we are passively overtaken
                 for (var k=0; k<carsBehind.length; k++){
-                    //console.log(k);
                     // first straight line + beginning of the first curve: we monitor the z values
                     if (car.position.x > -16 && car.position.x < 40) {
                         if (car.position.z < carsBehind[k].position.z && carsBehind[k].position.x > -16 && carsBehind[k].position.x < 40){
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1);
+                            updateInfo(lap, carsFront.length+1, raceTime);
                         }
                     }
                     // second straight line + beginning of the second curve: we monitor the x values
@@ -1443,7 +1465,7 @@
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1);
+                            updateInfo(lap, carsFront.length+1, raceTime);
                         }
                     }
                     // thrid straight line + beginning of the thrid curve: we monitor the z values
@@ -1452,7 +1474,7 @@
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1);
+                            updateInfo(lap, carsFront.length+1, raceTime);
                         }
                     }
                     // forth straight line + beginning of the forth curve: we monitor the x values
@@ -1461,7 +1483,7 @@
                             car_overTaken = carsBehind.splice(k, 1);
                             carsFront.push(car_overTaken[0]);
 
-                            updateInfo(lap, carsFront.length+1);
+                            updateInfo(lap, carsFront.length+1, raceTime);
                         }
                     }
                 }
@@ -1528,7 +1550,7 @@
                                     luigiSound.play();
                                 }
                             }
-                            updateInfo(lap+1, carsFront.length+1);
+                            updateInfo(lap+1, carsFront.length+1, raceTime);
                         }
                         lap += 1;
                         half_lap = false;
@@ -1536,6 +1558,7 @@
                 }
                 // end game
                 else{
+                    clearInterval(timer);
                     carAnimation1.stop();
                     carAnimation2.stop();
                     carAnimation3.stop();
@@ -1654,7 +1677,7 @@
                                         });
                                         item.position.y = 0.95;
                                         throwed = 0.8;
-
+                                        
                                         // for simplificity we will hit the first car in front of us
                                         targetCar = carsFront[0];
                                         // continue from here: we need that the shell reduces its distance from targetCar
