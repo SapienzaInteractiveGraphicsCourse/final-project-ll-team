@@ -1173,14 +1173,15 @@
                     }
                 }
 
-                // collision with lethal items
+                // collision with lethal items (moving shells included)
                 // we iterate over ALL the cars that can be hitten by one lethal item
                 for (var k=0; k<carsAll.length; k++){
                     // collision car-lethals loop: the car passes over a lethal item, it will do a spin (testacoda)
                     for (i=0; i<lethalItemPos.length; i++){
-                        if(carsAll[k].position.x < lethalItemPos[i][0]+1.5 && carsAll[k].position.x > lethalItemPos[i][0]-1.5 && carsAll[k].position.z < lethalItemPos[i][2]+1.5 && carsAll[k].position.z > lethalItemPos[i][2]-1.5){
+                        if((carsAll[k].position.x < lethalItemPos[i][0]+1.5 && carsAll[k].position.x > lethalItemPos[i][0]-1.5 && carsAll[k].position.z < lethalItemPos[i][2]+1.5 && carsAll[k].position.z > lethalItemPos[i][2]-1.5)
+                            || (k>0 && item && throwed > 0 && carsAll[k].position.x < item.position.x+4 && carsAll[k].position.x > item.position.x-4 && carsAll[k].position.z < item.position.z+4 && carsAll[k].position.z > item.position.z-4)){
                             // our car
-                            //console.log('hitten! ', k);
+                            console.log('hitten! ', k);
                             if (k == 0){
                                 soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
                                     luigiSound.pause();
@@ -1535,6 +1536,9 @@
                 }
                 // end game
                 else{
+                    carAnimation1.stop();
+                    carAnimation2.stop();
+                    carAnimation3.stop();
                     var finishTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                     var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
                     textBlock.color = "orange";
@@ -1558,6 +1562,7 @@
                     }, 5000);
                 }
 
+                // Easter egg
                 if (car.position.x > 491.5 && car.position.x < 494.5 && car.position.z > 476.5 && car.position.z < 479.5){
                     var easterTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                     var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
@@ -1664,7 +1669,7 @@
                             break
                             case "r":
                             case "R":
-                                window.location.href = "luigiCircuit.html";
+                                window.location.reload()
                             break
                         }
                     break;
