@@ -1616,6 +1616,18 @@
                             break
                             case "e":
                             case "E":
+                                /* Items Usage
+                                 * little recap on how items work on our Mario Kart:
+                                 * - banana: if you use this object you will leave a banane peel on the race truck
+                                 *              where enemies (or even yourself!) can trip and spin
+                                 * - red shell: if used and if there are enemies in front of you, it will follow and hit one of them
+                                 *                  otherwise, it will act like a green shell
+                                 * - green shell: if used, it follows a straight line trajectory and can hit enemies if encountered
+                                 *   (N.B. the collisions with shells on a straight line have been held above together with the other lethal items)
+                                 * - mushroom: it is the only good items here, if used, it will give a huge sprint for some seconds
+                                 * 
+                                 * Let's implement these characteristics.
+                                */
                                 if (item && (item.position.y == 4 || item.position.y == 4.5)){
                                     if(this.item_name == 'banana'){
                                         const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mk64_banana.wav", scene, function(){
@@ -1642,6 +1654,15 @@
                                         });
                                         item.position.y = 0.95;
                                         throwed = 0.8;
+
+                                        // for simplificity we will hit the first car in front of us
+                                        targetCar = carsFront[0];
+                                        // continue from here: we need that the shell reduces its distance from targetCar
+                                        if (targetCar){
+                                            lethalItems.push(item);
+                                            lethalItemPos.push([targetCar.position.x, targetCar.position.y, targetCar.position.z]);
+                                        }
+
                                     }
                                     else if (this.item_name == 'green_shell'){
                                         const soundShell = new BABYLON.Sound("soundShell", "sounds/shell.mp3", scene, function(){
