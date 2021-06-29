@@ -777,7 +777,7 @@
                 });
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/banana_peel_mario_kart/", "scene.gltf", scene).then((result) => {
                     if(previous_item){
-                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mouseover.mp3", scene, function(){
+                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mk64_banana.wav", scene, function(){
                             soundDrop.play();
                         });
                     }
@@ -1175,6 +1175,9 @@
             // update every 2 seconds not to kill the game
             var timer = setInterval(function(){ updateInfo(lap, carsFront.length+1, raceTime); }, 2053);
 
+            // angle to correct the direction of a throwed red shell that has to follow an enemy
+            var alpha = 0;
+
             scene.registerBeforeRender(function () {
                 var currentTime = new Date().getTime();
                 raceTime = (currentTime - startTime)/1000;
@@ -1516,8 +1519,8 @@
                             last_angle = angle;
                         }
                         else{
-                            item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(last_angle);
-                            item.position.x += (0.5 + throwed + sprint - impedance) * Math.sin(last_angle);
+                            item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(last_angle + alpha);
+                            item.position.x += (0.5 + throwed + sprint - impedance) * Math.sin(last_angle + alpha);
                         }
                                       
                     }
@@ -1704,23 +1707,25 @@
                                             soundShell.play();
                                         });
                                         item.position.y = 0.95;
-                                        throwed = 0.8;
+                                        throwed = 1.8;
                                         
                                         // for simplificity we will hit the first car in front of us
                                         targetCar = carsFront[0];
-                                        // continue from here: we need that the shell reduces its distance from targetCar
+                                        // we need that the shell reduces its distance from targetCar
                                         if (targetCar){
-                                            lethalItems.push(item);
-                                            lethalItemPos.push([targetCar.position.x, targetCar.position.y, targetCar.position.z]);
+                                            // moreover we will position the red shell aligned to the target car, in this way it will always
+                                            // go straight but it will ALMOST certainly hit the car
+                                            // N.B. this is another further simplification but it is more easy to implement
+                                            if ((car.position.x > -16 && car.position.x < 15) || (car.position.x > 603 && car.position.x < 635)) item.position.x = targetCar.position.x;
+                                            else item.position.z = targetCar.position.z;
                                         }
-
                                     }
                                     else if (this.item_name == 'green_shell'){
                                         const soundShell = new BABYLON.Sound("soundShell", "sounds/shell.mp3", scene, function(){
                                             soundShell.play();
                                         });
                                         item.position.y = 0.95;
-                                        throwed = 0.8;
+                                        throwed = 1.8;
                                     }
                                     else if (this.item_name == 'mushroom'){
                                         const soundMush = new BABYLON.Sound("soundMush", "sounds/mushroom.mp3", scene, function(){
