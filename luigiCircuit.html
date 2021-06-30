@@ -63,7 +63,13 @@
             const scene = new BABYLON.Scene(engine);
             const camera = new BABYLON.FollowCamera("camera", new BABYLON.Vector3(0, 0, 0), scene);
             camera.attachControl(canvas, true);
-            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
+
+            // in Luigi Circuit we have a sunlight: the most similar light in BabylonJS is the hemispheric light
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            
+            // lighting - 1
+            // ambient color requires the ambient color of the scene to be set
+            scene.ambientColor = new BABYLON.Color3(1, 1, 1);
 
             // building the sky: Luigi Circuit race is during a sunny day :)
             // Sky material
@@ -74,16 +80,7 @@
             // Sky mesh (box)
             var skybox = BABYLON.Mesh.CreateBox("skyBox", 10000.0, scene);
             skybox.material = skyboxMaterial;
-            
-            /*
-            * Keys:
-            * - 1: Day
-            * - 2: Evening
-            * - 3: Increase Luminance
-            * - 4: Decrease Luminance
-            * - 5: Increase Turbidity
-            * - 6: Decrease Turbidity
-            */
+
             var setSkyConfig = function (property, from, to) {
                 var keys = [
                     { frame: 0, value: from },
@@ -101,6 +98,7 @@
 
             // building the ground as the base of our environment
             groundMat = new BABYLON.StandardMaterial("groundMat");
+            // lighting - a diffure texture for rendering the grass field is fine
             groundMat.diffuseTexture = new BABYLON.Texture("textures/t_kusa_070712c.png");
             
             const ground = BABYLON.MeshBuilder.CreateDisc("ground", {radius: 650}, scene);
@@ -471,6 +469,7 @@
                     car.rotation.y = Math.PI;
                     // the camera will follow the car with this
                     camera.lockedTarget = car;
+
                 });
             else if(character_name == 'toad')
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/toad_kart/", "scene.gltf", scene).then((result) => {
@@ -587,7 +586,6 @@
             points3.push(new BABYLON.Vector3(10, 1, 420));
             points3.push(new BABYLON.Vector3(65, 1, 450));
 
-
             createItemBoxLine(scene, [200, 1, 451], false, false);
             createItemBoxLine(scene, [400, 1, 451], false, false);
 
@@ -629,7 +627,6 @@
             points1.push(points1[0]); // push to close path
             points2.push(points2[0]); // push to close path
             points3.push(points3[0]); // push to close path
-
 
             // adding sounds
             const soundStart = new BABYLON.Sound("soundStart", "sounds/mk64_racestart.wav", scene, function(){
