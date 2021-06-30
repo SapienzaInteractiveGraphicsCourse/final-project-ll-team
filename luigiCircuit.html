@@ -1159,11 +1159,13 @@
             lines3.color = new BABYLON.Color3(0, 1, 0);
             */
 
+            var base_speed = 0.5;
             var impedance = 0.0;
             // velocity increment when shell is thrown ...
             var throwed = 0;
             // ... but also when a mushroom is used
             var sprint = 0;
+            var acceleration = 0;
 
             // ensures that the user actually follows the track
             var half_lap = false;
@@ -1500,20 +1502,20 @@
                 // game loop
                 if(lap <= 3){
                     // car's movement update
-                    car.position.z += (0.5 + sprint - impedance) * Math.cos(angle);
-                    car.position.x += (0.5 + sprint - impedance) * Math.sin(angle);
+                    car.position.z += (base_speed + acceleration + sprint - impedance) * Math.cos(angle);
+                    car.position.x += (base_speed + acceleration + sprint - impedance) * Math.sin(angle);
 
                     // item's movement update
                     if(item){
                         if(throwed == 0){
-                            item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(angle);
-                            item.position.x += (0.5 + throwed + sprint - impedance) * Math.sin(angle);
+                            item.position.z += (base_speed + acceleration + throwed + sprint - impedance) * Math.cos(angle);
+                            item.position.x += (base_speed + acceleration + throwed + sprint - impedance) * Math.sin(angle);
                             // saved to throw shell in the right direction
                             last_angle = angle;
                         }
                         else{
-                            item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(last_angle);
-                            item.position.x += (0.5 + throwed + sprint - impedance) * Math.sin(last_angle);
+                            item.position.z += (base_speed + acceleration + throwed + sprint - impedance) * Math.cos(last_angle);
+                            item.position.x += (base_speed + acceleration + throwed + sprint - impedance) * Math.sin(last_angle);
                         }
                                       
                     }
@@ -1637,30 +1639,26 @@
                         switch (kbInfo.event.key) {
                             case "a":
                             case "A":
-                                car.rotation.y -= Math.PI / 12;
-                            break
+                                car.rotation.y -= Math.PI / 18;
+                                acceleration = 0;
+                                break;
+
                             case "d":
                             case "D":
-                                car.rotation.y += Math.PI / 12;
-                            break
+                                car.rotation.y += Math.PI / 18;
+                                acceleration = 0;
+                                break;
+
                             case "w":
                             case "W":
-                                car.position.z += 1 * Math.cos(angle);
-                                car.position.x += 1 * Math.sin(angle);
-                                if(item && throwed == 0){
-                                    item.position.z += 1 * Math.cos(angle);
-                                    item.position.x += 1 * Math.sin(angle);
-                                }
-                            break
+                                acceleration = 0.5;
+                                break;
+
                             case "s":
                             case "S":
-                                car.position.z -= 0.5 * Math.cos(angle);
-                                car.position.x -= 0.5 * Math.sin(angle);
-                                if(item && throwed == 0){
-                                    item.position.z -= 0.5 * Math.cos(angle);
-                                    item.position.x -= 0.5 * Math.sin(angle);
-                                }
-                            break
+                                acceleration = -0.2;
+                                break;
+
                             case "e":
                             case "E":
                                 /* Items Usage
@@ -1736,11 +1734,15 @@
                                         item = null;
                                     }
                                 }
-                            break
+                                break;
+
                             case "r":
                             case "R":
                                 window.location.reload()
-                            break
+                                break;
+
+                            default:
+                                acceleration = 0;
                         }
                     break;
                 }
