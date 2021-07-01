@@ -998,7 +998,7 @@
             rect1.cornerRadius = 10;
             rect1.color = "black";
             rect1.thickness = 4;
-            rect1.background = "blue";
+            rect1.background = "darkgreen";
             advancedTexture.addControl(rect1);
             rect1.addControl(x1);
 
@@ -1016,7 +1016,7 @@
             rect2.cornerRadius = 10;
             rect2.color = "black";
             rect2.thickness = 4;
-            rect2.background = "blue";
+            rect2.background = "darkgreen";
             advancedTexture.addControl(rect2);
             rect2.addControl(x2);
 
@@ -1171,6 +1171,78 @@
             var timer = setInterval(function(){ 
                 x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(raceTime);
             }, 10);
+
+            function endGame(){
+                clearInterval(timer);
+                carAnimation1.stop();
+                carAnimation2.stop();
+                carAnimation3.stop();
+                setTimeout(function(){
+                    var finishTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                    var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
+                    textBlock.color = "orange";
+                    textBlock.fontSize = 150;
+                    textBlock.fontFamily = "impact";
+                    finishTexture.addControl(textBlock);
+                    textBlock.text = "FINISH!";
+                    var handle = window.setInterval(() => {
+                        window.clearInterval(handle);
+                        textBlock.dispose();
+                        finishTexture.dispose();
+                    }, 2000);
+
+                    final_position = carsFront.length+1;
+                    
+                    if(final_position == 1)
+                        score += 15;
+                    else if(final_position == 2)
+                        score += 10;
+                    else if(final_position == 3)
+                        score += 5;
+                    else
+                        score += 0;
+
+                    setTimeout(function(){
+                        var positionTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                        var textBlock = new BABYLON.GUI.TextBlock("text", '');   
+                        textBlock.color = "orange";
+                        textBlock.fontSize = 150;
+                        textBlock.fontFamily = "impact";
+                        positionTexture.addControl(textBlock);
+                        textBlock.text = "YOU ARRIVED " + String(final_position) + "/4";
+                        var handle = window.setInterval(() => {
+                            window.clearInterval(handle);
+                            textBlock.dispose();
+                            positionTexture.dispose();
+                        }, 2000);
+                    }, 2100);
+                    
+                    setTimeout(function(){
+                        // if grandPrix, next race
+                        if(parent.document.URL.indexOf('&') > 1){
+                            var scoreTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                            var textBlock = new BABYLON.GUI.TextBlock("text", '');   
+                            textBlock.color = "orange";
+                            textBlock.fontSize = 150;
+                            textBlock.fontFamily = "impact";
+                            scoreTexture.addControl(textBlock);
+                            textBlock.text = "YOUR CURRENT SCORE IS:\n" + String(score) + "/45";
+                            var handle = window.setInterval(() => {
+                                window.clearInterval(handle);
+                                textBlock.dispose();
+                                scoreTexture.dispose();
+                            }, 3000);
+                            setTimeout(function(){
+                                window.location.href = "bowserCastle.html?character="+character_name+"&score="+score.toString();
+                            }, 6000);
+                        }
+                        // else back to menu
+                        else{
+                            window.location.href = "index.html";
+                        }
+                    }, 4500);
+                }, 1000);
+            }
 
             scene.registerBeforeRender(function () {
                 var currentTime = new Date().getTime();
@@ -1565,46 +1637,24 @@
                         car.rotation.y = Math.PI;
                         half_lap = false;
                     }
+                    var speed = base_speed + acceleration + sprint - impedance;
                 }
                 // end game
                 else{
-                    clearInterval(timer);
-                    carAnimation1.stop();
-                    carAnimation2.stop();
-                    carAnimation3.stop();
-                    var finishTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-                    var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
-                    textBlock.color = "orange";
-                    textBlock.fontSize = 200;
-                    textBlock.fontFamily = "impact";
-                    finishTexture.addControl(textBlock);
-                    textBlock.text = "FINISH!";
-                    var handle = window.setInterval(() => {
-                        window.clearInterval(handle);
-                        textBlock.dispose();
-                        finishTexture.dispose();
-                    }, 3000);
-
-                    final_position = carsFront.length+1;
-                    if(!update_done){
-                        update_done = true
-                        if(final_position == 1)
-                            score += 15;
-                        else if(final_position == 2)
-                            score += 10;
-                        else if(final_position == 3)
-                            score += 5;
-                        else
-                            score += 0;
+                    if (speed > 0){
+                        speed -= 0.002;
+                        car.position.z += speed * Math.cos(angle);
+                        car.position.x += speed * Math.sin(angle);
                     }
-                    setTimeout(function(){
-                        // if grandPrix, next race
-                        if(parent.document.URL.indexOf('&') > 1)
-                            window.location.href = "bowserCastle.html?character="+character_name+"&score="+score.toString();
-                        // else back to menu
-                        else
-                            window.location.href = "index.html";
-                    }, 5000);
+
+                    if(!update_done){
+                        update_done = true;
+                        const soundEnd = new BABYLON.Sound("soundEnd", "sounds/results.mp3", scene, function(){
+                        luigiSound.stop();
+                        soundEnd.play();
+                        });
+                        endGame();
+                    }
                 }
 
                 // Easter egg
@@ -1612,7 +1662,7 @@
                     var easterTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                     var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
                     textBlock.color = "orange";
-                    textBlock.fontSize = 200;
+                    textBlock.fontSize = 150;
                     textBlock.fontFamily = "impact";
                     easterTexture.addControl(textBlock);
                     textBlock.text = "EASTER EGG FOUND!";
