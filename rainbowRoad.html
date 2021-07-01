@@ -77,7 +77,6 @@
             // ambient color requires the ambient color of the scene to be set
             scene.ambientColor = new BABYLON.Color3(1, 1, 1);
 
-            // building the sky: Luigi Circuit race is during a sunny day :)
             // Sky material
             var skyboxMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
             skyboxMaterial.backFaceCulling = false;
@@ -149,7 +148,7 @@
 
             // second 'rettilineo' of other pieces of street
             pos_z -= 15;
-            pos_x += 2;
+            pos_x += 5;
             for (i=0; i<9; i++){
                 other_street = street.clone()
                 other_street.rotation.y = Math.PI / 2;
@@ -163,6 +162,7 @@
             pos_x -= 15;
             for (i=0; i<15; i++){
                 other_street = street.clone()
+                other_street.rotation.y = Math.PI;
                 other_street.position.z = pos_z;
                 other_street.position.x = pos_x;
                 pos_z -= 60;
@@ -173,27 +173,26 @@
             pos_x -= 15;
             for (i=0; i<9; i++){
                 other_street = street.clone();
-                other_street.rotation.y = Math.PI / 2;
+                other_street.rotation.y = Math.PI*3/ 2;
                 other_street.position.z = pos_z;
                 other_street.position.x = pos_x;
                 pos_x -= 60;
             }
 
             // fifth and last straight line
-            pos_z += 16;
-            pos_x += 18;
+            pos_z += 15;
+            pos_x += 15;
             for (i=0; i<6; i++){
                 other_street = street.clone();
-                other_street.rotation.y = Math.PI;
                 other_street.position.z = pos_z;
                 other_street.position.x = pos_x;
                 pos_z += 60;
             }
             // add a last piece to nicely end the circuit
-            other_street = BABYLON.MeshBuilder.CreateBox("street", {width:30, height:64, depth:1});
+            other_street = BABYLON.MeshBuilder.CreateBox("street", {width:30, height:55, depth:1});
             other_street.rotation.x = Math.PI / 2;
             other_street.material = streetMat;
-            other_street.position.z = pos_z+2;
+            other_street.position.z = pos_z-2.5;
             other_street.position.x = pos_x;
             
             // user's car
@@ -321,10 +320,10 @@
             createItemBoxLine(scene, [-7, 1, 130], true, false);
             createItemBoxLine(scene, [-7, 1, 300], true, false);
 
-            points2.push(new BABYLON.Vector3(0, 1, 450));
-            points2.push(new BABYLON.Vector3(65, 1, 465));
-            points1.push(new BABYLON.Vector3(5, 1, 450));
-            points1.push(new BABYLON.Vector3(65, 1, 455));
+            points2.push(new BABYLON.Vector3(2, 1, 452));
+            points2.push(new BABYLON.Vector3(8, 1, 465));
+            points1.push(new BABYLON.Vector3(5, 1, 451));
+            points1.push(new BABYLON.Vector3(8, 1, 460));
             points3.push(new BABYLON.Vector3(10, 1, 450));
             points3.push(new BABYLON.Vector3(65, 1, 460));
 
@@ -334,9 +333,9 @@
             points2.push(new BABYLON.Vector3(510, 1, 460));
             points2.push(new BABYLON.Vector3(545, 1, 440));
             points1.push(new BABYLON.Vector3(515, 1, 465));
-            points1.push(new BABYLON.Vector3(530, 1, 445));
+            points1.push(new BABYLON.Vector3(540, 1, 445));
             points3.push(new BABYLON.Vector3(520, 1, 460));
-            points3.push(new BABYLON.Vector3(540, 1, 450));
+            points3.push(new BABYLON.Vector3(530, 1, 450));
 
             createItemBoxLine(scene, [530, 1, 300], true, true);
             createItemBoxLine(scene, [530, 1, 130], true, true);
@@ -346,12 +345,12 @@
             createItemBoxLine(scene, [530, 1, -130], true, true);
             createItemBoxLine(scene, [530, 1, -330], true, true);
 
-            points2.push(new BABYLON.Vector3(530, 1, -410));
-            points2.push(new BABYLON.Vector3(540, 1, -435));
+            points2.push(new BABYLON.Vector3(545, 1, -410));
+            points2.push(new BABYLON.Vector3(535, 1, -435));
             points1.push(new BABYLON.Vector3(545, 1, -430));
-            points1.push(new BABYLON.Vector3(535, 1, -420));
+            points1.push(new BABYLON.Vector3(535, 1, -431));
             points3.push(new BABYLON.Vector3(540, 1, -435));
-            points3.push(new BABYLON.Vector3(520, 1, -422));
+            points3.push(new BABYLON.Vector3(520, 1, -431));
 
             createItemBoxLine(scene, [400, 1, -437], false, true);
             createItemBoxLine(scene, [200, 1, -437], false, true);
@@ -912,6 +911,78 @@
                 x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(raceTime);
             }, 10);
 
+            function endGame(){
+                clearInterval(timer);
+                carAnimation1.stop();
+                carAnimation2.stop();
+                carAnimation3.stop();
+                setTimeout(function(){
+                    var finishTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                    var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
+                    textBlock.color = "orange";
+                    textBlock.fontSize = 150;
+                    textBlock.fontFamily = "impact";
+                    finishTexture.addControl(textBlock);
+                    textBlock.text = "FINISH!";
+                    var handle = window.setInterval(() => {
+                        window.clearInterval(handle);
+                        textBlock.dispose();
+                        finishTexture.dispose();
+                    }, 2000);
+
+                    final_position = carsFront.length+1;
+                    
+                    if(final_position == 1)
+                        score += 15;
+                    else if(final_position == 2)
+                        score += 10;
+                    else if(final_position == 3)
+                        score += 5;
+                    else
+                        score += 0;
+
+                    setTimeout(function(){
+                        var positionTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                        var textBlock = new BABYLON.GUI.TextBlock("text", '');   
+                        textBlock.color = "orange";
+                        textBlock.fontSize = 150;
+                        textBlock.fontFamily = "impact";
+                        positionTexture.addControl(textBlock);
+                        textBlock.text = "YOU ARRIVED " + String(final_position) + "/4";
+                        var handle = window.setInterval(() => {
+                            window.clearInterval(handle);
+                            textBlock.dispose();
+                            positionTexture.dispose();
+                        }, 3000);
+                    }, 3100);
+                    
+                    setTimeout(function(){
+                        // if grandPrix, next race
+                        if(parent.document.URL.indexOf('&') > 1){
+                            var scoreTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                            var textBlock = new BABYLON.GUI.TextBlock("text", '');   
+                            textBlock.color = "orange";
+                            textBlock.fontSize = 150;
+                            textBlock.fontFamily = "impact";
+                            scoreTexture.addControl(textBlock);
+                            textBlock.text = "YOUR CURRENT SCORE IS:\n" + String(score) + "/45";
+                            var handle = window.setInterval(() => {
+                                window.clearInterval(handle);
+                                textBlock.dispose();
+                                scoreTexture.dispose();
+                            }, 6000);
+                            setTimeout(function(){
+                                window.location.href = "prixResults.html?character="+character_name+"&score="+score.toString();
+                            }, 7000);
+                        }
+                        // else back to menu
+                        else{
+                            window.location.href = "index.html";
+                        }
+                    }, 4500);
+                }, 1000);
+            }
+
             scene.registerBeforeRender(function () {
                 var currentTime = new Date().getTime();
                 raceTime = (currentTime - startTime)/1000;
@@ -1107,8 +1178,7 @@
                 else if (index == 9 || index == 10){
                     if (car.position.x < ckpts[index].x) index +=1;
                 }
-                index = index % ckpts.length;
-                            
+                index = index % ckpts.length;      
                 
                 // collision car-walls: fall down of the truck
                 // check over the vertical walls
@@ -1286,7 +1356,7 @@
                     angle = car.rotation.y - Math.PI;
                     
                     // You must arrive to half lap to increase lap when you arrive to the finish line
-                    if (car.position.z <37 && car.position.z >33 && car.position.x <640 && car.position.x >600){
+                    if (car.position.z <37 && car.position.z >33 && car.position.x <555 && car.position.x >520){
                         half_lap = true;
                         car.rotation.y = Math.PI*2;
                     }
@@ -1330,66 +1400,24 @@
                         car.rotation.y = Math.PI;
                         half_lap = false;
                     }
+                    var speed = base_speed + acceleration + sprint;
                 }
                 // end game
                 else{
-                    clearInterval(timer);
-                    carAnimation1.stop();
-                    carAnimation2.stop();
-                    carAnimation3.stop();
-                    var finishTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-                    var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
-                    textBlock.color = "orange";
-                    textBlock.fontSize = 200;
-                    textBlock.fontFamily = "impact";
-                    finishTexture.addControl(textBlock);
-                    textBlock.text = "FINISH!";
-                    var handle = window.setInterval(() => {
-                        window.clearInterval(handle);
-                        textBlock.dispose();
-                        finishTexture.dispose();
-                    }, 3000);
-
-                    final_position = carsFront.length+1;
-                    if(!update_done){
-                        update_done = true
-                        if(final_position == 1)
-                            score += 15;
-                        else if(final_position == 2)
-                            score += 10;
-                        else if(final_position == 3)
-                            score += 5;
-                        else
-                            score += 0;
+                    if (speed > 0){
+                        speed -= 0.002;
+                        car.position.z += speed * Math.cos(angle);
+                        car.position.x += speed * Math.sin(angle);
                     }
-                    setTimeout(function(){
-                        // if grandPrix, next race
-                        if(parent.document.URL.indexOf('&') > 1)
-                            window.location.href = "bowserCastle.html?character="+character_name+"&score="+score.toString();
-                        // else back to menu
-                        else
-                            window.location.href = "index.html";
-                    }, 5000);
-                }
 
-                // Easter egg
-                if (car.position.x > 491.5 && car.position.x < 494.5 && car.position.z > 476.5 && car.position.z < 479.5){
-                    var easterTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-                    var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
-                    textBlock.color = "orange";
-                    textBlock.fontSize = 200;
-                    textBlock.fontFamily = "impact";
-                    easterTexture.addControl(textBlock);
-                    textBlock.text = "EASTER EGG FOUND!";
-                    var handle = window.setInterval(() => {
-                        window.clearInterval(handle);
-                        textBlock.dispose();
-                        easterTexture.dispose();
-                    }, 3000);
-
-                    setTimeout(function(){
-                        window.location.href = "easter.html";
-                    }, 4000);
+                    if(!update_done){
+                        update_done = true;
+                        const soundEnd = new BABYLON.Sound("soundEnd", "sounds/results.mp3", scene, function(){
+                        rainbowSound.stop();
+                        soundEnd.play();
+                        });
+                        endGame();
+                    }
                 }
             });
 
