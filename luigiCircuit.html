@@ -311,6 +311,8 @@
             streetMat = new BABYLON.StandardMaterial("streetMat");
             streetMat.diffuseTexture = new BABYLON.Texture("textures/road_luigi.png");
             streetMat.diffuseTexture.hasAlpha = true;
+            // lighting + material: the rainbow is translucent, therefore:
+            streetMat.alpha = 0.5;
             
             const street = BABYLON.MeshBuilder.CreateBox("street", {width:30, height:60, depth:1});
             street.rotation.x = Math.PI / 2;

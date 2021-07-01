@@ -46,17 +46,37 @@
         var goodItemPos = [], goodItems = [];
         // arrays for the paths for the computer-controlled cars
         var points1 = [], points2 = [], points3 = [];
+        // arrays to store the checkpoints in case of falls from the race truck ...
+        var ckpts = [];
+        // ... together with the index of the current checkpoints that will be incremented every time we take an item
+        var index = 0;
+        var posX, posZ;
 
         var groundMat, streetMat, bleachersMat;
+        var ground;
+        var update_done = false;
+
+        if(parent.document.URL.indexOf('&') > 1){
+                var character_name = parent.document.URL.substring(parent.document.URL.indexOf('?')+11, parent.document.URL.indexOf('&'));
+                var score = parseInt(parent.document.URL.substring(parent.document.URL.indexOf('&')+7, parent.document.URL.length));
+        }
+        else
+            var character_name = parent.document.URL.substring(parent.document.URL.indexOf('?')+11, parent.document.URL.length);
 
         const createScene = () => {
             
             const scene = new BABYLON.Scene(engine);
             const camera = new BABYLON.FollowCamera("camera", new BABYLON.Vector3(0, 0, 0), scene);
             camera.attachControl(canvas, true);
-            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
 
-            /*
+            // in Rainbow Road we have a sunlight: the most similar light in BabylonJS is the hemispheric light
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            // the light is placed near the sun (see ske section below)
+            light.position = new BABYLON.Vector3(0, 20, -10000);
+            // lighting - 1
+            // ambient color requires the ambient color of the scene to be set
+            scene.ambientColor = new BABYLON.Color3(1, 1, 1);
+
             // building the sky: Luigi Circuit race is during a sunny day :)
             // Sky material
             var skyboxMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
@@ -80,21 +100,23 @@
                 scene.beginDirectAnimation(skybox, [animation], 0, 100, false, 1);
             };
             // Set to Day
-            setSkyConfig("material.inclination", skyboxMaterial.inclination, 0);
-            */
+            //setSkyConfig("material.inclination", skyboxMaterial.inclination, 2);
 
-            // building the ground as the base of our environment
+            // here what we call 'ground' is the Earth planet we can see in the background
             groundMat = new BABYLON.StandardMaterial("groundMat");
+            // lighting - a diffure texture for rendering the grass field is fine
             groundMat.diffuseTexture = new BABYLON.Texture("textures/earth.png");
             
-            const ground = BABYLON.MeshBuilder.CreateSphere("ground", {diameter: 300}, scene);
+            ground = BABYLON.MeshBuilder.CreateSphere("ground", {diameter: 600}, scene);
             ground.rotation.x = Math.PI / 2;
             ground.position.x = 325;
             ground.position.y = -100;
-            ground.position.z = 800;
+            ground.position.z = 1200;
             ground.material = groundMat;
+            ground.rotationQuaternion = null;
 
             // building the environment around the street
+            
             BABYLON.SceneLoader.ImportMeshAsync("", "models/finish_line/", "scene.gltf", scene).then((result) => {
                 finish = result.meshes[0];
                 finish.scaling = new BABYLON.Vector3(-1.1, 0.8, 0.9);
@@ -256,50 +278,127 @@
             other_street.material = streetMat;
             other_street.position.z = pos_z+2;
             other_street.position.x = pos_x;
+            
+            // user's car
+            if(character_name == 'mario')
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_mario/", "scene.gltf", scene).then((result) => {
+                    car = result.meshes[0];
+                    car.scaling = new BABYLON.Vector3(2.2, 2.2, -2.2);
+                    car.position.x = -5;
+                    car.position.y = 0.7;
+                    car.rotationQuaternion = null;
+                    car.rotation.y = Math.PI;
+                    // the camera will follow the car with this
+                    camera.lockedTarget = car;
 
-            BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_mario/", "scene.gltf", scene).then((result) => {
-                car = result.meshes[0];
-                car.scaling = new BABYLON.Vector3(2, 2, -2);
-                car.position.x = -5;
-                car.position.y = 0.7;
-                car.rotationQuaternion = null;
-                car.rotation.y = Math.PI;
-                // the camera will follow the car with this
-                camera.lockedTarget = car;
-            });
+                });
+            else if(character_name == 'toad')
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_toad/", "scene.gltf", scene).then((result) => {
+                    car = result.meshes[0];
+                    car.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car.position.x = -5;
+                    car.position.y = 0.7;
+                    car.rotationQuaternion = null;
+                    car.rotation.y = Math.PI;
+                    camera.lockedTarget = car;
 
+                });
+            else if(character_name == 'bowser')
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_bowser/", "scene.gltf", scene).then((result) => {
+                    car = result.meshes[0];
+                    car.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car.position.x = -5;
+                    car.position.y = 0.7;
+                    car.rotationQuaternion = null;
+                    car.rotation.y = Math.PI;
+                    camera.lockedTarget = car;
+
+                });
+            else // donkey
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_dk/", "scene.gltf", scene).then((result) => {
+                    car = result.meshes[0];
+                    car.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car.position.x = -5;
+                    car.position.y = 0.7;
+                    car.rotationQuaternion = null;
+                    car.rotation.y = Math.PI;
+                    camera.lockedTarget = car;
+
+                });
+            
+            // three cpu's cars
             points1.push(new BABYLON.Vector3(5, 0.7, 6.67));
-            BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_toad/", "scene.gltf", scene).then((result) => {
-                car1 = result.meshes[0];
-                car1.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
-                car1.position.x = 5;
-                car1.position.y = 0.7;
-                car1.position.z = 6.67;
-                car1.rotationQuaternion = null;
-                car1.rotation.y = Math.PI;
-            });
+            if(character_name!='toad'){
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_toad/", "scene.gltf", scene).then((result) => {
+                    car1 = result.meshes[0];
+                    car1.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car1.position.x = 5;
+                    car1.position.y = 0.7;
+                    car1.position.z = 6.67;
+                    car1.rotationQuaternion = null;
+                    car1.rotation.y = Math.PI;
+                });
+            }
+            else{
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_mario/", "scene.gltf", scene).then((result) => {
+                    car1 = result.meshes[0];
+                    car1.scaling = new BABYLON.Vector3(2.2, 2.2, -2.2);
+                    car1.position.x = 5;
+                    car1.position.y = 0.7;
+                    car1.position.z = 6.67;
+                    car1.rotationQuaternion = null;
+                    car1.rotation.y = Math.PI;
+                });
+            }
 
             points2.push(new BABYLON.Vector3(-5, 0.7, 13.37));
-            BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_bowser/", "scene.gltf", scene).then((result) => {
-                car2 = result.meshes[0];
-                car2.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
-                car2.position.x = -5;
-                car2.position.y = 0.7;
-                car2.position.z = 13.37;
-                car2.rotationQuaternion = null;
-                car2.rotation.y = Math.PI;
-            });
+            if(character_name!='bowser'){
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_bowser/", "scene.gltf", scene).then((result) => {
+                    car2 = result.meshes[0];
+                    car2.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car2.position.x = -5;
+                    car2.position.y = 0.7;
+                    car2.position.z = 13.37;
+                    car2.rotationQuaternion = null;
+                    car2.rotation.y = Math.PI;
+                });
+            }
+            else{
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_mario/", "scene.gltf", scene).then((result) => {
+                    car2 = result.meshes[0];
+                    car2.scaling = new BABYLON.Vector3(2.2, 2.2, -2.2);
+                    car2.position.x = -5;
+                    car2.position.y = 0.7;
+                    car2.position.z = 13.37;
+                    car2.rotationQuaternion = null;
+                    car2.rotation.y = Math.PI;
+                });
+            }
 
             points3.push(new BABYLON.Vector3(5, 0.7, 20));
-            BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_dk/", "scene.gltf", scene).then((result) => {
-                car3 = result.meshes[0];
-                car3.scaling = new BABYLON.Vector3(1.5, 1.5, -1.5);
-                car3.position.x = 5;
-                car3.position.y = 0.7;
-                car3.position.z = 20;
-                car3.rotationQuaternion = null;
-                car3.rotation.y = Math.PI;
-            });
+            if(character_name!='donkey'){ 
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_dk/", "scene.gltf", scene).then((result) => {
+                    car3 = result.meshes[0];
+                    car3.scaling = new BABYLON.Vector3(1.3, 1.3, -1.3);
+                    car3.position.x = 5;
+                    car3.position.y = 0.7;
+                    car3.position.z = 20;
+                    car3.rotationQuaternion = null;
+                    car3.rotation.y = Math.PI;
+                });
+            }
+            else{
+                BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_mario/", "scene.gltf", scene).then((result) => {
+                    car3 = result.meshes[0];
+                    car3.scaling = new BABYLON.Vector3(2.2, 2.2, -2.2);
+                    car3.position.x = 5;
+                    car3.position.y = 0.7;
+                    car3.position.z = 20;
+                    car3.rotationQuaternion = null;
+                    car3.rotation.y = Math.PI;
+                });
+            }
+            ckpts.push(new BABYLON.Vector4(0, 0.7, 0, Math.PI));
 
             // these functions are asynchronous, we need to pay attention in the pushes
             createItemBoxLine(scene, [-7, 1, 130], true, false);
@@ -311,7 +410,6 @@
             points1.push(new BABYLON.Vector3(65, 1, 455));
             points3.push(new BABYLON.Vector3(10, 1, 420));
             points3.push(new BABYLON.Vector3(65, 1, 450));
-
 
             createItemBoxLine(scene, [200, 1, 451], false, false);
             createItemBoxLine(scene, [400, 1, 451], false, false);
@@ -354,7 +452,6 @@
             points1.push(points1[0]); // push to close path
             points2.push(points2[0]); // push to close path
             points3.push(points3[0]); // push to close path
-
 
             // adding sounds
             const soundStart = new BABYLON.Sound("soundStart", "sounds/mk64_racestart.wav", scene, function(){
@@ -406,21 +503,29 @@
                 points2.push(new BABYLON.Vector3(starting_pos[0]+4.5, starting_pos[1], starting_pos[2]));
                 points1.push(new BABYLON.Vector3(starting_pos[0]+9, starting_pos[1], starting_pos[2]));
                 points3.push(new BABYLON.Vector3(starting_pos[0]+13.5, starting_pos[1], starting_pos[2]));
+
+                ckpts.push(new BABYLON.Vector4(starting_pos[0]+9, starting_pos[1], starting_pos[2]-20, Math.PI));
             }
             else if(alignedX&&opposed){
                 points3.push(new BABYLON.Vector3(starting_pos[0]+4.5, starting_pos[1], starting_pos[2]));
                 points1.push(new BABYLON.Vector3(starting_pos[0]+9, starting_pos[1], starting_pos[2]));
                 points2.push(new BABYLON.Vector3(starting_pos[0]+13.5, starting_pos[1], starting_pos[2]));
+
+                ckpts.push(new BABYLON.Vector4(starting_pos[0]+9, starting_pos[1], starting_pos[2]+20, 2*Math.PI));
             }
             else if(!alignedX&&opposed){
                 points1.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+9));
                 points3.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+13.5));
                 points2.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+4.5));
+
+                ckpts.push(new BABYLON.Vector4(starting_pos[0]+20, starting_pos[1], starting_pos[2]+9, 5*Math.PI/2));
             }
             else{
                 points1.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+9));
                 points2.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+13.5));
                 points3.push(new BABYLON.Vector3(starting_pos[0], starting_pos[1], starting_pos[2]+4.5));
+
+                ckpts.push(new BABYLON.Vector4(starting_pos[0]-20, starting_pos[1], starting_pos[2]+9, 3*Math.PI/2));
             }
             BABYLON.SceneLoader.ImportMeshAsync("", "models/item_box/", "scene.gltf", scene).then((result) => {
                 itemBox = result.meshes[0];
@@ -497,13 +602,25 @@
                     }
                 }
                 item_name = 'banana';
+                const soundItems = new BABYLON.Sound("soundItems", "sounds/items.mp3", scene, function(){
+                    soundItems.play();
+                });
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/banana/", "scene.gltf", scene).then((result) => {
+                    if(previous_item){
+                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mk64_banana.wav", scene, function(){
+                            soundDrop.play();
+                        });
+                    }
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.002, 0.002, 0.002);
-                    item.position.y = 3.9;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
+                    item.position.y = -4.5;
                     positiveItem = false;
+                    soundItems.onended = function(){
+                        if(item)
+                            item.position.y = 4.5;
+                    }
                 });
             }
             else if (name == 'red_shell'){
@@ -537,13 +654,25 @@
                     }
                 }
                 item_name = 'red_shell';
+                const soundItems = new BABYLON.Sound("soundItems", "sounds/items.mp3", scene, function(){
+                    soundItems.play();
+                });
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/red_shell/", "scene.gltf", scene).then((result) => {
+                    if(previous_item){
+                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mouseover.mp3", scene, function(){
+                            soundDrop.play();
+                        });
+                    }
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.15, 0.15, 0.15);
-                    item.position.y = 3.9;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
+                    item.position.y = -4.5;
                     positiveItem = false;
+                    soundItems.onended = function(){
+                        if(item)
+                            item.position.y = 4.5;
+                    }
                 });
             }
             else if (name == 'mushroom'){
@@ -577,13 +706,27 @@
                     } 
                 }
                 item_name = 'mushroom';
+                const soundItems = new BABYLON.Sound("soundItems", "sounds/items.mp3", scene, function(){
+                    soundItems.play();
+                });
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/mushroom/", "scene.gltf", scene).then((result) => {
+                    if(previous_item){
+                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mouseover.mp3", scene, function(){
+                            soundDrop.play();
+                        });
+                    }
                     item = result.meshes[0];
-                    item.scaling = new BABYLON.Vector3(1.25, 1.25, 1.25);
-                    item.position.y = 3.9;
+                    item.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+                    item.position.y = -4.5;
+                    item.rotationQuaternion = null;
+                    item.rotation.y = Math.PI / 2;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
                     positiveItem = true;
+                    soundItems.onended = function(){
+                        if(item)
+                            item.position.y = 4.5;
+                    }
                 });
             }
             else if (name == 'green_shell'){
@@ -617,15 +760,27 @@
                     } 
                 }
                 item_name = 'green_shell';
+                const soundItems = new BABYLON.Sound("soundItems", "sounds/items.mp3", scene, function(){
+                    soundItems.play();
+                });
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/green_shell/", "scene.gltf", scene).then((result) => {
+                    if(previous_item){
+                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mouseover.mp3", scene, function(){
+                            soundDrop.play();
+                        });
+                    }
                     item = result.meshes[0];
                     item.scaling = new BABYLON.Vector3(0.005, 0.005, 0.005);
-                    item.position.y = 3.4;
+                    item.position.y = -4.5;
                     item.position.z = car.position.z;
                     item.position.x = car.position.x;
                     item.rotationQuaternion = null;
                     item.rotation.y = Math.PI / 2;
                     positiveItem = false;
+                    soundItems.onended = function(){
+                        if(item)
+                            item.position.y = 4;
+                    }
                 });
             }
             else {
@@ -633,47 +788,61 @@
             }
         }
 
-        // if the car is out of the street I will have more friction
-        function setImpedance(car) {
-            impedance = 0.0;
-            
-            if ((car.position.z > -534 && car.position.z < 471 && car.position.x > -13 && car.position.x < 634)&&
-                 !(car.position.z > -507 && car.position.z < 444 && car.position.x > 13.5 && car.position.x < 607))
-                impedance = 0.0;
-            else
-                impedance = 0.3;
+        var lap = 1;
+        // arrays to store the cars in front of us or behind us
+        var carsBehind = [], carsFront = [];
 
-            return impedance;
-        }
+        function startRace(car) {
+            var startTime = new Date().getTime();
+            angle = car.rotation.y - Math.PI;
 
-        function updateInfo(lap, position) {
+            // array to store all the cars involved in the race
+            // REMEMBER: index = 0 -> our car, index > 0 -> 'enemies'
+            var carsAll = [car, car1, car2, car3];
+
+            // at the beginning we are 4th, therefore:
+            carsFront = [car1, car2, car3];
+            // moreover, we will always use the carsFront array to determine our position during the race, in fact:
             var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
-            let x = new BABYLON.GUI.TextBlock('TextBlock', '120'); 
-            x.fontSize = 60;
-            x.fontFamily = "impact";
-            x.color = "yellow";
+            let x1 = new BABYLON.GUI.TextBlock('TextBlock', ''); 
+            x1.fontSize = 50;
+            x1.fontFamily = "impact";
+            x1.color = "yellow";
             var rect1 = new BABYLON.GUI.Rectangle();
-            rect1.width = 0.25;
+            rect1.width = 0.23;
+            rect1.height = 0.21;
+            rect1.paddingTop = '3%';
+            rect1.paddingRight = '3%';
             rect1.horizontalAlignment = 1;
             rect1.verticalAlignment = 0;
-            rect1.height = "150px";
             rect1.cornerRadius = 10;
             rect1.color = "black";
             rect1.thickness = 4;
-            rect1.background = "grey";
+            rect1.background = "blue";
             advancedTexture.addControl(rect1);
-            rect1.addControl(x);
+            rect1.addControl(x1);
 
-            x.text = 'Lap ' + String(lap) + '/3' + '\n Position: ' + String(position);
-        }
+            let x2 = new BABYLON.GUI.TextBlock('TextBlock', ''); 
+            x2.fontSize = 50;
+            x2.fontFamily = "impact";
+            x2.color = "yellow";
+            var rect2 = new BABYLON.GUI.Rectangle();
+            rect2.width = 0.18;
+            rect2.height = 0.13;
+            rect2.paddingBottom = '3%';
+            rect2.paddingLeft = '3%';
+            rect2.horizontalAlignment = 0;
+            rect2.verticalAlignment = 1;
+            rect2.cornerRadius = 10;
+            rect2.color = "black";
+            rect2.thickness = 4;
+            rect2.background = "blue";
+            advancedTexture.addControl(rect2);
+            rect2.addControl(x2);
 
-        var lap = 1;
-        var position = 1;
-
-        function startRace(car) {
-            updateInfo(lap, position);
-            angle = car.rotation.y - Math.PI;
+            x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(0);
+            x2.text = 'Position: ' + String(carsFront.length + 1);
 
             // these variables handle the collisions with the (horizontal/vertical) walls
             var wall_horiz1 = false, wall_horiz2 = false;
@@ -684,19 +853,20 @@
             // let's start the soundtrack of the Rainbow Road
             const rainbowSound = new BABYLON.Sound("rainbowSound", "sounds/N64 Rainbow Road.mp3", scene, null, {
                 loop: true,
-                autoplay: true 
+                autoplay: true
             });
 
-            const animCarX1 = new BABYLON.Animation("canAnimationx1", "position.x", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animCarZ1 = new BABYLON.Animation("canAnimationz1", "position.z", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            // here we handle the animation of the other three cars in the race
+            const animCarX1 = new BABYLON.Animation("canAnimationx1", "position.x", 40, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ1 = new BABYLON.Animation("canAnimationz1", "position.z", 40, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
             
-            const animCarX2 = new BABYLON.Animation("canAnimationx2", "position.x", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animCarZ2 = new BABYLON.Animation("canAnimationz2", "position.z", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarX2 = new BABYLON.Animation("canAnimationx2", "position.x", 40, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ2 = new BABYLON.Animation("canAnimationz2", "position.z", 40, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
-            const animCarX3 = new BABYLON.Animation("canAnimationx3", "position.x", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animCarZ3 = new BABYLON.Animation("canAnimationz3", "position.z", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarX3 = new BABYLON.Animation("canAnimationx3", "position.x", 40, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ3 = new BABYLON.Animation("canAnimationz3", "position.z", 40, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
-            const rotCar = new BABYLON.Animation("rotAnimationz1", "rotation.y", 37, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const rotCar = new BABYLON.Animation("rotAnimationz1", "rotation.y", 40, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
             const carKeysX1 = [];
             const carKeysZ1 = [];
@@ -788,10 +958,12 @@
             animCarX3.setKeys(carKeysX3);
             animCarZ3.setKeys(carKeysZ3);
 
-            scene.beginDirectAnimation(car1, [animCarX1, animCarZ1, rotCar], 0, frame, true);
-            scene.beginDirectAnimation(car2, [animCarX2, animCarZ2, rotCar], 0, frame, true);
-            scene.beginDirectAnimation(car3, [animCarX3, animCarZ3, rotCar], 0, frame, true);
-
+            // we store the animations in some variables to use them if the computer-controlled cars hit a lethal items
+            var carAnimation1 = scene.beginDirectAnimation(car1, [animCarX1, animCarZ1, rotCar], 0, frame, true);
+            carAnimation1.speedRatio *= 0.97;
+            var carAnimation2 = scene.beginDirectAnimation(car2, [animCarX2, animCarZ2, rotCar], 0, frame, true);
+            carAnimation2.speedRatio *= 1.03;
+            var carAnimation3 = scene.beginDirectAnimation(car3, [animCarX3, animCarZ3, rotCar], 0, frame, true);
             
             // decomment these lines if you want to test the paths of the computer-controlled cars
             // Creation of a lines mesh
@@ -803,34 +975,43 @@
             lines3.color = new BABYLON.Color3(0, 1, 0);
             */
 
-            var impedance = 0.0;
+            var base_speed = 0.5;
             // velocity increment when shell is thrown ...
             var throwed = 0;
             // ... but also when a mushroom is used
             var sprint = 0;
+            var acceleration = 0;
 
             // ensures that the user actually follows the track
             var half_lap = false;
 
-            // whether to save the position of the car before the fall
-            var save = true;
+            // if we need to reproduce the sound of the fall and to save the current position
+            var s = true;
+            var pos = true;
+
+            // 2053ms to give it a "random" feeling
+            // update every 2 seconds not to kill the game
+            var timer = setInterval(function(){ 
+                x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(raceTime);
+            }, 10);
 
             scene.registerBeforeRender(function () {
-                impedance = setImpedance(car);
+                var currentTime = new Date().getTime();
+                raceTime = (currentTime - startTime)/1000;
+
+                ground.rotation.y += 0.001;
 
                 // collision car-itembox loop
                 for (i=0; i<itemBoxPos.length; i++){
                     if(car.position.x < itemBoxPos[i][0]+1.5 && car.position.x > itemBoxPos[i][0]-1.5 && car.position.z < itemBoxPos[i][2]+1.5 && car.position.z > itemBoxPos[i][2]-1.5){
                         if(item)
                             item.position.y = 0.95;
-
                         // we have four items randomly chosen
                         throwed = 0;
                         if(Math.random()<0.25)
                             createItem('red_shell');
                         
                         else if(Math.random()<0.5)
-                            
                             createItem('banana');
                         
                         else if(Math.random()<0.75)
@@ -843,198 +1024,341 @@
                         itemBoxes[i].dispose();
                         itemBoxes.splice(i, 1);
                         itemBoxPos.splice(i, 1);
+
                         break;
                     }
                 }
 
-                // collision car-lethals loop: the car passes over a lethal item, it will do a spin (testacoda)
-                for (i=0; i<lethalItemPos.length; i++){
-                    if(car.position.x < lethalItemPos[i][0]+1.5 && car.position.x > lethalItemPos[i][0]-1.5 && car.position.z < lethalItemPos[i][2]+1.5 && car.position.z > lethalItemPos[i][2]-1.5){
-                        soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
-                            rainbowSound.pause();
-                            soundHit.play();
-                        });
-                        soundHit.onended = function(){
-                            rainbowSound.play();
-                        }
-                        /* the spin is realized with a combination of three animations:
-                         * - carRotation: 'actual' spin
-                         * - carStopx: necessary to do not move the car along the x-axis
-                         * - carStopz: necessary to do not move the car along the z-axis
-                         * without these last two, the car will proceed in its motion
-                        */
-                        // every animation is composed by key frames
-                        var carRotation = new BABYLON.Animation("carRotation", "rotation.y", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-                        const keyFramesRot = []; 
-                        
-                        var carStopx = new BABYLON.Animation("carStopx", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-                        var carStopz = new BABYLON.Animation("carStopx", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-                        const keyFramesPosx = [];
-                        const keyFramesPosz = [];
-
-                        const initial_rot = car.rotation.y;
-                        const initial_posx = car.position.x;
-                        const initial_posz = car.position.z;
-                        
-                        var spin = Math.PI;
-                        for (j=0; j<5; j++){
-                            keyFramesRot.push({
-                                frame: 5*j,
-                                value: initial_rot + spin
-                            });
-                            spin += Math.PI;
-
-                            keyFramesPosx.push({
-                                frame: 5*j,
-                                value: initial_posx
-                            });
-                            keyFramesPosz.push({
-                                frame: 5*j,
-                                value: initial_posz
-                            });
-                        }
-                        keyFramesRot.push({
-                            frame: 30,
-                            value: initial_rot
-                        })
-                    
-                        carRotation.setKeys(keyFramesRot);
-                        carStopx.setKeys(keyFramesPosx);
-                        carStopz.setKeys(keyFramesPosz);
-
-                        scene.beginDirectAnimation(car, [carRotation, carStopx, carStopz], 0, 60, false);
-                        
-                        lethalItems[i].dispose();
-                        lethalItems.splice(i, 1);
-                        lethalItemPos.splice(i, 1);
-
-                        setTimeout(function(){
-                            if(item){
-                                    item.position.z = car.position.z;
-                                    item.position.x = car.position.x;
+                // collision with lethal items (moving shells included)
+                // we iterate over ALL the cars that can be hitten by one lethal item
+                for (var k=0; k<carsAll.length; k++){
+                    // collision car-lethals loop: the car passes over a lethal item, it will do a spin (testacoda)
+                    for (i=0; i<lethalItemPos.length; i++){
+                        if((carsAll[k].position.x < lethalItemPos[i][0]+1.5 && carsAll[k].position.x > lethalItemPos[i][0]-1.5 && carsAll[k].position.z < lethalItemPos[i][2]+1.5 && carsAll[k].position.z > lethalItemPos[i][2]-1.5)
+                            || (k>0 && item && throwed > 0 && carsAll[k].position.x < item.position.x+4 && carsAll[k].position.x > item.position.x-4 && carsAll[k].position.z < item.position.z+4 && carsAll[k].position.z > item.position.z-4)){
+                            
+                            if(k>0 && item && throwed > 0 && carsAll[k].position.x < item.position.x+4 && carsAll[k].position.x > item.position.x-4 && carsAll[k].position.z < item.position.z+4 && carsAll[k].position.z > item.position.z-4){
+                                item.dispose();
+                                item = null;
                             }
-                        }, 3000);
-                        break;
-                    }
-                }
 
-                // collision car-goods: the car passes over a positive item (aka a mushroom), it will accelerate
-                for (i=0; i<goodItemPos.length; i++){
-                    if(car.position.x < goodItemPos[i][0]+0.8 && car.position.x > goodItemPos[i][0]-0.8 && car.position.z < goodItemPos[i][2]+0.8 && car.position.z > goodItemPos[i][2]-0.8){
-                        sprint = 1;
+                            // our car
+                            if (k == 0){
+                                soundHit = new BABYLON.Sound("soundStart", "sounds/mammamia.mp3", scene, function(){
+                                    rainbowSound.pause();
+                                    soundHit.play();
+                                });
+                                soundHit.onended = function(){
+                                    rainbowSound.play();
+                                }
+                            }
+                            /* the spin is realized with a combination of three animations:
+                            * - carRotation: 'actual' spin
+                            * - carStopx: necessary to do not move the car along the x-axis
+                            * - carStopz: necessary to do not move the car along the z-axis
+                            * without these last two, the car will proceed in its motion
+                            */
+                            // every animation is composed by key frames
+                            var carRotation = new BABYLON.Animation("carRotation", "rotation.y", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                            const keyFramesRot = []; 
+                            
+                            var carStopx = new BABYLON.Animation("carStopx", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                            var carStopz = new BABYLON.Animation("carStopx", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                            const keyFramesPosx = [];
+                            const keyFramesPosz = [];
+
+                            const initial_rot = carsAll[k].rotation.y;
+                            const initial_posx = carsAll[k].position.x;
+                            const initial_posz = carsAll[k].position.z;
+                            
+                            var spin = Math.PI;
+                            for (j=0; j<5; j++){
+                                keyFramesRot.push({
+                                    frame: 5*j,
+                                    value: initial_rot + spin
+                                });
+                                spin += Math.PI;
+
+                                keyFramesPosx.push({
+                                    frame: 5*j,
+                                    value: initial_posx
+                                });
+                                keyFramesPosz.push({
+                                    frame: 5*j,
+                                    value: initial_posz
+                                });
+                            }
+                            keyFramesRot.push({
+                                frame: 30,
+                                value: initial_rot
+                            })
                         
-                        goodItems[i].dispose();
-                        goodItems.splice(i, 1);
-                        goodItemPos.splice(i, 1);
+                            carRotation.setKeys(keyFramesRot);
+                            carStopx.setKeys(keyFramesPosx);
+                            carStopz.setKeys(keyFramesPosz);
 
-                        break;
+                            // for our car we only need to start the animation of the spin ...
+                            if (k == 0) scene.beginDirectAnimation(car, [carRotation, carStopx, carStopz], 0, 60, false);
+                            // ... while for all the others, we need to pause their motion animations, start the spin and then
+                            // we resume their motion AFTER (!!!) the end of the spin -> async + await
+                            else if (k == 1){
+                                carAnimation1.pause()
+                                setTimeout(async () => {
+                                    var anim = scene.beginDirectAnimation(car1, [carRotation, carStopx, carStopz], 0, 60, false);
+                                    await anim.waitAsync();
+                                    carAnimation1.restart();
+                                });
+                            }
+                            else if (k == 2){
+                                carAnimation2.pause()
+                                setTimeout(async () => {
+                                    var anim = scene.beginDirectAnimation(car2, [carRotation, carStopx, carStopz], 0, 60, false);
+                                    await anim.waitAsync();
+                                    carAnimation2.restart();
+                                });
+                            }
+                            else {
+                                carAnimation3.pause()
+                                setTimeout(async () => {
+                                    var anim = scene.beginDirectAnimation(car3, [carRotation, carStopx, carStopz], 0, 60, false);
+                                    await anim.waitAsync();
+                                    carAnimation3.restart();
+                                });
+                            }
+
+                            lethalItems[i].dispose();
+                            lethalItems.splice(i, 1);
+                            lethalItemPos.splice(i, 1);
+
+                            // only our car has the item
+                            if (k == 0){
+                                setTimeout(function(){
+                                    if(item){
+                                            item.position.z = car.position.z;
+                                            item.position.x = car.position.x;
+                                    }
+                                }, 3000);
+                            }
+                            break;
+                        }
                     }
                 }
 
-                // collision car-endWorld: (car_x-center_x)^2 + (car_z-center_z)^2 > radius^2
-                if(Math.pow(car.position.x-325, 2)+ Math.pow(car.position.z+60, 2) > 422500){
-                    var endWorldTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                // collision with good items (aka mushrooms)
+                // we iterate over ALL the cars that can pass over one mushroom
+                // for simplicity, only our car will do the sprint given by the item
+                for (var k=0; k<carsAll.length; k++){
+                    // collision car-goods: the car passes over a positive item (aka a mushroom), it will accelerate
+                    for (i=0; i<goodItemPos.length; i++){
+                        if(carsAll[k].position.x < goodItemPos[i][0]+0.8 && carsAll[k].position.x > goodItemPos[i][0]-0.8 && carsAll[k].position.z < goodItemPos[i][2]+0.8 && carsAll[k].position.z > goodItemPos[i][2]-0.8){
+                            // our car
+                            if (k == 0) {
+                                // play the mushroom sound
+                                const soundMush = new BABYLON.Sound("soundMush", "sounds/mushroom.mp3", scene, function(){
+                                    soundMush.play();
+                                });
+                                var repeat = true;
+                                soundMush.onended = function(){
+                                    if (repeat){
+                                        soundMush.play();
+                                        repeat = false;
+                                    }
+                                }
+                                
+                                sprint = 1;
+                            }
+
+                            goodItems[i].dispose();
+                            goodItems.splice(i, 1);
+                            goodItemPos.splice(i, 1);
+
+                            break;
+                        }
+                    }
+                }
+
+                // updating of the index checkpoint through the path
+                if (index < 3 || index > 10){
+                    if (car.position.z > ckpts[index].z) index +=1;
+                }
+                else if (index == 3 || index == 4){
+                    if (car.position.x > ckpts[index].x) index +=1;
+                }
+                else if (index > 4 && index < 9){
+                    if (car.position.z < ckpts[index].z) index +=1;
+                }
+                else if (index == 9 || index == 10){
+                    if (car.position.x < ckpts[index].x) index +=1;
+                }
+                index = index % ckpts.length;
+                                
+                // collision car-walls: fall down of the truck
+                // check over the vertical walls
+                if (car.position.x < -16 && car.position.z > -440 && car.position.z < 360) wall_vert1 = true;                     
+                if (car.position.x > 15 && car.position.x < 20 && car.position.z > -440 && car.position.z < 360) wall_vert_op1 = true;                     
+                if (car.position.x > 635 && car.position.z > -440 && car.position.z < 360) wall_vert2 = true;                     
+                if (car.position.x < 603 && car.position.x > 600 && car.position.z > -440 && car.position.z < 360) wall_vert_op2 = true;                     
+                // check over the horizontal walls
+                if (car.position.x > 115 && car.position.x < 508 && car.position.z < 444 && car.position.z > 440) wall_horiz1 = true;
+                if (car.position.x > 115 && car.position.x < 508 && car.position.z < -501 && car.position.z > -505) wall_horiz2 = true;
+                if (car.position.x > 115 && car.position.x < 508 && car.position.z > 472 && car.position.z < 476) wall_horiz_op1 = true;
+                if (car.position.x > 115 && car.position.x < 508 && car.position.z < -533 && car.position.z > -537) wall_horiz_op2 = true;
+
+                // falling down routine
+                if (wall_vert1 || wall_vert_op1 || wall_vert2 || wall_vert_op2 || wall_horiz1 || wall_horiz2 || wall_horiz_op1 || wall_horiz_op2){
+                    car.position.y -= 0.5;
+                    
+                    if (pos  == true){
+                        posX = car.position.x;
+                        posZ = car.position.z;
+                        pos = false;
+                    }
+                    car.position.x = posX;
+                    car.position.z = posZ;
+                                
+                    if (s == true){
+                        soundFall = new BABYLON.Sound("soundFall", "sounds/mk64_mario06.wav", scene, function(){
+                            soundFall.play();
+                            s = false;
+                        });
+                       
+                    }
+                    if (car.position.y < -100){
+                        
+                        var endWorldTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                         var textBlock = new BABYLON.GUI.TextBlock("text", '');   
                         textBlock.color = "orange";
                         textBlock.fontSize = 100;
                         textBlock.fontFamily = "impact";
                         endWorldTexture.addControl(textBlock);
-                        textBlock.text = "You are not supposed to be here..\n Back to the track!";
+                        textBlock.text = "You have fallen down..\n Try to stay on the track!";
                         var handle = window.setInterval(() => {
                             window.clearInterval(handle);
                             textBlock.dispose();
                             endWorldTexture.dispose();
                         }, 3000);
-                    if(half_lap){
-                        car.position.x = 620;
-                        car.position.z = 35;
-                        car.rotation.y = 0;
-                    }
-                    else{
-                        car.position.x = -5;
-                        car.position.z = 0;
-                        car.rotation.y = Math.PI;
+
+                        car.position.x = ckpts[index-1].x;
+                        car.position.y = ckpts[index-1].y;
+                        car.position.z = ckpts[index-1].z;
+                        car.rotation.y = ckpts[index-1].w;
+                        acceleration = -0.5;
+
+                        // you lose the item if you fall down
+                        if (item) {
+                            item.dispose();
+                            item = null;
+                        }
+                        wall_vert1 = false;
+                        wall_vert_op1 = false;
+                        wall_vert2 = false;
+                        wall_vert_op2 = false;
+                        wall_horiz1 = false;
+                        wall_horiz2 = false;
+                        wall_horiz_op1 = false;
+                        wall_horiz_op2 = false;
+
+                        // we do not consider the progress of checkpoints if we fall
+                        //index = (index - 1) % (ckpts.length - 1);
+                        s = true;
+                        pos = true;
                     }
                 }
 
-                // collision car-walls: change rotation
-                // check over the vertical walls
-                if (save && car.position.x < -13 && car.position.z > -440 && car.position.z < 360) wall_vert1 = true;                     
-                if (save && car.position.x > 12 && car.position.x < 20 && car.position.z > -440 && car.position.z < 360) wall_vert_op1 = true;                     
-                if (save && car.position.x > 633 && car.position.z > -440 && car.position.z < 360) wall_vert2 = true;                     
-                if (save && car.position.x < 605 && car.position.x > 600 && car.position.z > -440 && car.position.z < 360) wall_vert_op2 = true;                     
-            
-                // check over the horizontal walls
-                if (car.position.x > 115 && car.position.x < 510 && car.position.z < 444 && car.position.z > 440) wall_horiz1 = true;
-                if (car.position.x > 115 && car.position.x < 510 && car.position.z < -501 && car.position.z > -505) wall_horiz2 = true;
+                // control overtakings:
+                // 1) we actively overtake
+                for (var k=0; k<carsFront.length; k++){
+                    // first straight line + beginning of the first curve: we monitor the z values
+                    if (car.position.x > -16 && car.position.x < 40) {
+                        if (car.position.z > carsFront[k].position.z && carsFront[k].position.x > -16 && carsFront[k].position.x < 40){
+                            car_overTaken = carsFront.splice(k, 1);
+                            carsBehind.push(car_overTaken[0]);
 
-                var posx_fall = 0, posz_fall = 0;
-                
-                // falling down like a spectacular comet :)
-                if (wall_vert1) {
-                    // fixing the position of the car (like in a spin above)
-                    var carStopx = new BABYLON.Animation("carStopx", "position.x", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-                    var carStopz = new BABYLON.Animation("carStopx", "position.z", 10, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-                    const keyFramesPosx = [];
-                    const keyFramesPosz = [];
-
-                    const initial_posx = car.position.x;
-                    const initial_posz = car.position.z;
-                    
-                    for (j=0; j<5; j++){
-                        keyFramesPosx.push({
-                            frame: 5*j,
-                            value: initial_posx
-                        });
-                        keyFramesPosz.push({
-                            frame: 5*j,
-                            value: initial_posz
-                        });
+                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                        }
                     }
-                    
-                    carStopx.setKeys(keyFramesPosx);
-                    carStopz.setKeys(keyFramesPosz);
+                    // second straight line + beginning of the second curve: we monitor the x values
+                    else if (car.position.z > 442 && car.position.z < 500) {
+                        if (car.position.x > carsFront[k].position.x && carsFront[k].position.z > 442 && carsFront[k].position.z < 500){
+                            car_overTaken = carsFront.splice(k, 1);
+                            carsBehind.push(car_overTaken[0]);
 
-                    scene.beginDirectAnimation(car, [carStopx, carStopz], 0, 30, false);
-                    
-                    car.position.y -= 1;
-                    if (save){
-                        posx_fall = initial_posx + 12.5;
-                        posz_fall = initial_posz;
-                        save = false;
+                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                        }
                     }
-                    console.log(wall_vert1);
-                    
-                }
-                
-                // restore the correct position on the race truck
-                if (car.position.y < -100){
-                    car.position.y = 0.7;
-                    car.position.x = posx_fall;
-                    car.position.z = posz_fall;
-                    save = true;
-                    wall_vert1 = false;
-                    console.log(car.position);
-                }
+                    // thrid straight line + beginning of the thrid curve: we monitor the z values
+                    else if (car.position.x > 579 && car.position.x < 635) {
+                        if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 579 && carsFront[k].position.x < 635){
+                            car_overTaken = carsFront.splice(k, 1);
+                            carsBehind.push(car_overTaken[0]);
 
+                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                        }
+                    }
+                    // forth straight line + beginning of the forth curve: we monitor the x values
+                    else if (car.position.z > -580 && car.position.z < -503) {
+                        if (car.position.x < carsFront[k].position.x && carsFront[k].position.z > -580 && carsFront[k].position.z < -503){
+                            car_overTaken = carsFront.splice(k, 1);
+                            carsBehind.push(car_overTaken[0]);
+
+                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                        }
+                    }
+                }
+                // 2) we are passively overtaken
+                for (var k=0; k<carsBehind.length; k++){
+                    // first straight line + beginning of the first curve: we monitor the z values
+                    if (car.position.x > -16 && car.position.x < 40) {
+                        if (car.position.z < carsBehind[k].position.z && carsBehind[k].position.x > -16 && carsBehind[k].position.x < 40){
+                            car_overTaken = carsBehind.splice(k, 1);
+                            carsFront.push(car_overTaken[0]);
+
+                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                        }
+                    }
+                    // second straight line + beginning of the second curve: we monitor the x values
+                    else if (car.position.z > 442 && car.position.z < 500) {
+                        if (car.position.x < carsBehind[k].position.x && carsBehind[k].position.z > 442 && carsBehind[k].position.z < 500){
+                            car_overTaken = carsBehind.splice(k, 1);
+                            carsFront.push(car_overTaken[0]);
+
+                            x2.text = 'Position: ' + String(carsFront.length + 1);                        }
+                    }
+                    // thrid straight line + beginning of the thrid curve: we monitor the z values
+                    else if (car.position.x > 579 && car.position.x < 635) {
+                        if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 579 && carsBehind[k].position.x < 635){
+                            car_overTaken = carsBehind.splice(k, 1);
+                            carsFront.push(car_overTaken[0]);
+
+                            x2.text = 'Position: ' + String(carsFront.length + 1);                        }
+                    }
+                    // forth straight line + beginning of the forth curve: we monitor the x values
+                    else if (car.position.z > -580 && car.position.z < -503) {
+                        if (car.position.x > carsBehind[k].position.x && carsBehind[k].position.z > -580 && carsBehind[k].position.z < -503){
+                            car_overTaken = carsBehind.splice(k, 1);
+                            carsFront.push(car_overTaken[0]);
+
+                            x2.text = 'Position: ' + String(carsFront.length + 1);                        }
+                    }
+                }
 
                 // game loop
                 if(lap <= 3){
                     // car's movement update
-                    car.position.z += (0.5 + sprint - impedance) * Math.cos(angle);
-                    car.position.x += (0.5 + sprint - impedance) * Math.sin(angle);
+                    car.position.z += (base_speed + acceleration + sprint) * Math.cos(angle);
+                    car.position.x += (base_speed + acceleration + sprint) * Math.sin(angle);
 
                     // item's movement update
                     if(item){
                         if(throwed == 0){
-                            item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(angle);
-                            item.position.x += (0.5 + throwed + sprint - impedance) * Math.sin(angle);
+                            item.position.z += (base_speed + acceleration + throwed + sprint) * Math.cos(angle);
+                            item.position.x += (base_speed + acceleration + throwed + sprint) * Math.sin(angle);
                             // saved to throw shell in the right direction
                             last_angle = angle;
                         }
                         else{
-                            item.position.z += (0.5 + throwed + sprint - impedance) * Math.cos(last_angle);
-                            item.position.x += (0.5 + throwed + sprint - impedance) * Math.sin(last_angle);
+                            item.position.z += (base_speed + acceleration + throwed + sprint) * Math.cos(last_angle);
+                            item.position.x += (base_speed + acceleration + throwed + sprint) * Math.sin(last_angle);
                         }
                                       
                     }
@@ -1044,8 +1368,10 @@
                     angle = car.rotation.y - Math.PI;
                     
                     // You must arrive to half lap to increase lap when you arrive to the finish line
-                    if (car.position.z <37 && car.position.z >33 && car.position.x <640 && car.position.x >600)
+                    if (car.position.z <37 && car.position.z >33 && car.position.x <640 && car.position.x >600){
                         half_lap = true;
+                        car.rotation.y = Math.PI*2;
+                    }
                     // lap's increment and update
                     if(half_lap && car.position.x <14 && car.position.x >-14 && car.position.z <33 && car.position.z >30){
                         if(lap <=2){
@@ -1080,14 +1406,19 @@
                                     rainbowSound.play();
                                 }
                             }
-                            updateInfo(lap+1, position);
+                            x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(raceTime);
                         }
                         lap += 1;
+                        car.rotation.y = Math.PI;
                         half_lap = false;
                     }
                 }
                 // end game
                 else{
+                    clearInterval(timer);
+                    carAnimation1.stop();
+                    carAnimation2.stop();
+                    carAnimation3.stop();
                     var finishTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                     var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
                     textBlock.color = "orange";
@@ -1101,9 +1432,46 @@
                         finishTexture.dispose();
                     }, 3000);
 
+                    final_position = carsFront.length+1;
+                    if(!update_done){
+                        update_done = true
+                        if(final_position == 1)
+                            score += 15;
+                        else if(final_position == 2)
+                            score += 10;
+                        else if(final_position == 3)
+                            score += 5;
+                        else
+                            score += 0;
+                    }
                     setTimeout(function(){
-                        window.location.href = "index.html";
+                        // if grandPrix, next race
+                        if(parent.document.URL.indexOf('&') > 1)
+                            window.location.href = "bowserCastle.html?character="+character_name+"&score="+score.toString();
+                        // else back to menu
+                        else
+                            window.location.href = "index.html";
                     }, 5000);
+                }
+
+                // Easter egg
+                if (car.position.x > 491.5 && car.position.x < 494.5 && car.position.z > 476.5 && car.position.z < 479.5){
+                    var easterTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                    var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
+                    textBlock.color = "orange";
+                    textBlock.fontSize = 200;
+                    textBlock.fontFamily = "impact";
+                    easterTexture.addControl(textBlock);
+                    textBlock.text = "EASTER EGG FOUND!";
+                    var handle = window.setInterval(() => {
+                        window.clearInterval(handle);
+                        textBlock.dispose();
+                        easterTexture.dispose();
+                    }, 3000);
+
+                    setTimeout(function(){
+                        window.location.href = "easter.html";
+                    }, 4000);
                 }
             });
 
@@ -1114,34 +1482,45 @@
                         switch (kbInfo.event.key) {
                             case "a":
                             case "A":
-                                car.rotation.y -= Math.PI / 12;
-                            break
+                                car.rotation.y -= Math.PI / 18;
+                                acceleration = 0;
+                                break;
+
                             case "d":
                             case "D":
-                                car.rotation.y += Math.PI / 12;
-                            break
+                                car.rotation.y += Math.PI / 18;
+                                acceleration = 0;
+                                break;
+
                             case "w":
                             case "W":
-                                car.position.z += 1 * Math.cos(angle);
-                                car.position.x += 1 * Math.sin(angle);
-                                if(item && throwed == 0){
-                                    item.position.z += 1 * Math.cos(angle);
-                                    item.position.x += 1 * Math.sin(angle);
-                                }
-                            break
+                                acceleration = 0.5;
+                                break;
+
                             case "s":
                             case "S":
-                                car.position.z -= 0.5 * Math.cos(angle);
-                                car.position.x -= 0.5 * Math.sin(angle);
-                                if(item && throwed == 0){
-                                    item.position.z -= 0.5 * Math.cos(angle);
-                                    item.position.x -= 0.5 * Math.sin(angle);
-                                }
-                            break
+                                acceleration = -0.2;
+                                break;
+
                             case "e":
                             case "E":
-                                if (item){
+                                /* Items Usage
+                                 * little recap on how items work on our Mario Kart:
+                                 * - banana: if you use this object you will leave a banane peel on the race truck
+                                 *              where enemies (or even yourself!) can trip and spin
+                                 * - red shell: if used and if there are enemies in front of you, it will follow and hit one of them
+                                 *                  otherwise, it will act like a green shell
+                                 * - green shell: if used, it follows a straight line trajectory and can hit enemies if encountered
+                                 *   (N.B. the collisions with shells on a straight line have been held above together with the other lethal items)
+                                 * - mushroom: it is the only good items here, if used, it will give a huge sprint for some seconds
+                                 * 
+                                 * Let's implement these characteristics.
+                                */
+                                if (item && (item.position.y == 4 || item.position.y == 4.5)){
                                     if(this.item_name == 'banana'){
+                                        const soundDrop = new BABYLON.Sound("soundDrop", "sounds/mk64_banana.wav", scene, function(){
+                                            soundDrop.play();
+                                        });
                                         item.position.y = 0.95;
                                         posx = item.position.x;
                                         posy = item.position.y;
@@ -1158,20 +1537,55 @@
 
                                     }
                                     else if (this.item_name == 'red_shell'){
+                                        const soundShell = new BABYLON.Sound("soundShell", "sounds/shell.mp3", scene, function(){
+                                            soundShell.play();
+                                        });
                                         item.position.y = 0.95;
-                                        throwed = 0.8;
+                                        throwed = 1.8;
+                                        
+                                        // for simplificity we will hit the first car in front of us
+                                        targetCar = carsFront[0];
+                                        // we need that the shell reduces its distance from targetCar
+                                        if (targetCar){
+                                            // moreover we will position the red shell aligned to the target car, in this way it will always
+                                            // go straight but it will ALMOST certainly hit the car
+                                            // N.B. this is another further simplification but it is more easy to implement
+                                            if ((car.position.x > -16 && car.position.x < 15) || (car.position.x > 603 && car.position.x < 635)) item.position.x = targetCar.position.x;
+                                            else item.position.z = targetCar.position.z;
+                                        }
                                     }
                                     else if (this.item_name == 'green_shell'){
+                                        const soundShell = new BABYLON.Sound("soundShell", "sounds/shell.mp3", scene, function(){
+                                            soundShell.play();
+                                        });
                                         item.position.y = 0.95;
-                                        throwed = 0.8;
+                                        throwed = 1.8;
                                     }
                                     else if (this.item_name == 'mushroom'){
+                                        const soundMush = new BABYLON.Sound("soundMush", "sounds/mushroom.mp3", scene, function(){
+                                            soundMush.play();
+                                        });
+                                        var repeat = true;
+                                        soundMush.onended = function(){
+                                            if (repeat){
+                                                soundMush.play();
+                                                repeat = false;
+                                            }
+                                        }
                                         sprint = 1;
                                         item.dispose();
                                         item = null;
                                     }
                                 }
-                            break
+                                break;
+
+                            case "r":
+                            case "R":
+                                window.location.reload()
+                                break;
+
+                            default:
+                                acceleration = 0;
                         }
                     break;
                 }
