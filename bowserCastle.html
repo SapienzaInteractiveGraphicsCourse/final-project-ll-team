@@ -51,6 +51,7 @@
         // ... together with the index of the current checkpoints that will be incremented every time we take an item
         var index = 0;
         var posX, posZ;
+        var raceTime = 0;
 
         var groundMat, streetMat, bleachersMat;
         var update_done = false;
@@ -117,7 +118,7 @@
             const ground = BABYLON.MeshBuilder.CreateDisc("ground", {radius: 650}, scene);
             ground.rotation.x = Math.PI / 2;
             ground.position.x = 325;
-            ground.position.y = -1.5;
+            ground.position.y = -2.5;
             ground.position.z = -60;
             ground.material = lavaMaterial;
             lavaMaterial.unlit = true;
@@ -347,6 +348,7 @@
                     car1.position.z = 126.67;
                     car1.rotationQuaternion = null;
                     car1.rotation.y = Math.PI;
+                    car1.lap = 1;
                 });
             }
             else{
@@ -358,6 +360,7 @@
                     car1.position.z = 126.67;
                     car1.rotationQuaternion = null;
                     car1.rotation.y = Math.PI;
+                    car1.lap = 1;
                 });
             }
 
@@ -371,6 +374,7 @@
                     car2.position.z = 132.37;
                     car2.rotationQuaternion = null;
                     car2.rotation.y = Math.PI;
+                    car2.lap = 1;
                 });
             }
             else{
@@ -382,6 +386,7 @@
                     car2.position.z = 132.37;
                     car2.rotationQuaternion = null;
                     car2.rotation.y = Math.PI;
+                    car2.lap = 1;
                 });
             }
 
@@ -395,6 +400,7 @@
                     car3.position.z = 140;
                     car3.rotationQuaternion = null;
                     car3.rotation.y = Math.PI;
+                    car3.lap = 1;
                 });
             }
             else{
@@ -406,6 +412,7 @@
                     car3.position.z = 140;
                     car3.rotationQuaternion = null;
                     car3.rotation.y = Math.PI;
+                    car3.lap = 1;
                 });
             }
             ckpts.push(new BABYLON.Vector4(645, 0.7, 120, Math.PI));
@@ -875,16 +882,16 @@
             });
 
             // here we handle the animation of the other three cars in the race
-            const animCarX1 = new BABYLON.Animation("canAnimationx1", "position.x", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animCarZ1 = new BABYLON.Animation("canAnimationz1", "position.z", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarX1 = new BABYLON.Animation("canAnimationx1", "position.x", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ1 = new BABYLON.Animation("canAnimationz1", "position.z", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
             
-            const animCarX2 = new BABYLON.Animation("canAnimationx2", "position.x", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animCarZ2 = new BABYLON.Animation("canAnimationz2", "position.z", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarX2 = new BABYLON.Animation("canAnimationx2", "position.x", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ2 = new BABYLON.Animation("canAnimationz2", "position.z", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
-            const animCarX3 = new BABYLON.Animation("canAnimationx3", "position.x", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animCarZ3 = new BABYLON.Animation("canAnimationz3", "position.z", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarX3 = new BABYLON.Animation("canAnimationx3", "position.x", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ3 = new BABYLON.Animation("canAnimationz3", "position.z", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
-            const rotCar = new BABYLON.Animation("rotAnimationz1", "rotation.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const rotCar = new BABYLON.Animation("rotAnimationz1", "rotation.y", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
             const carKeysX1 = [];
             const carKeysZ1 = [];
@@ -1017,7 +1024,7 @@
             lines3.color = new BABYLON.Color3(0, 1, 0);
             */
 
-            var base_speed = 0.3;
+            var base_speed = 0.5;
             var impedance = 0.0;
             // velocity increment when shell is thrown ...
             var throwed = 0;
@@ -1026,7 +1033,7 @@
             var acceleration = 0;
 
             // ensures that the user actually follows the track
-            var half_lap = false;
+            var half_lap = false, half_lap1 = false, half_lap2 = false, half_lap3 = false;
 
             // if we need to reproduce the sound of the fall and to save the current position
             var s = true;
@@ -1110,6 +1117,7 @@
             }
 
             scene.registerBeforeRender(function () {
+                console.log(car1.lap, car2.lap, car3.lap);
                 var currentTime = new Date().getTime();
                 raceTime = (currentTime - startTime)/1000;
                 //impedance = setImpedance(car);
@@ -1345,7 +1353,7 @@
                         });
                        
                     }
-                    if (car.position.y < -100){
+                    if (car.position.y < -40){
                         
                         var endWorldTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                         var textBlock = new BABYLON.GUI.TextBlock("text", '');   
@@ -1364,7 +1372,7 @@
                         car.position.y = ckpts[index-1].y;
                         car.position.z = ckpts[index-1].z;
                         car.rotation.y = ckpts[index-1].w;
-                        acceleration = -0.3;
+                        acceleration = -0.5;
 
                         // you lose the item if you fall down
                         if (item) {
@@ -1381,135 +1389,139 @@
                 // control overtakings:
                 // 1) we actively overtake
                 for (var k=0; k<carsFront.length; k++){
-                    if (!wall1) {
-                        if (car.position.z > carsFront[k].position.z && carsFront[k].position.x > 634 && carsFront[k].position.x < 663){
-                            car_overTaken = carsFront.splice(k, 1);
-                            carsBehind.push(car_overTaken[0]);
+                    if(carsFront[k].lap == lap){
+                        if (!wall1) {
+                            if (car.position.z > carsFront[k].position.z && carsFront[k].position.x > 634 && carsFront[k].position.x < 663){
+                                car_overTaken = carsFront.splice(k, 1);
+                                carsBehind.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall2) {
-                        if (car.position.x < carsFront[k].position.x && carsFront[k].position.z > 288.5 && carsFront[k].position.z < 320){
-                            car_overTaken = carsFront.splice(k, 1);
-                            carsBehind.push(car_overTaken[0]);
+                        else if (!wall2) {
+                            if (car.position.x < carsFront[k].position.x && carsFront[k].position.z > 288.5 && carsFront[k].position.z < 320){
+                                car_overTaken = carsFront.splice(k, 1);
+                                carsBehind.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall3) {
-                        if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 387 && carsFront[k].position.x < 419){
-                            car_overTaken = carsFront.splice(k, 1);
-                            carsBehind.push(car_overTaken[0]);
+                        else if (!wall3) {
+                            if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 387 && carsFront[k].position.x < 419){
+                                car_overTaken = carsFront.splice(k, 1);
+                                carsBehind.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall4) {
-                        if (car.position.x < carsFront[k].position.x && carsFront[k].position.z > 22.5 && carsFront[k].position.z < 54.7){
-                            car_overTaken = carsFront.splice(k, 1);
-                            carsBehind.push(car_overTaken[0]);
+                        else if (!wall4) {
+                            if (car.position.x < carsFront[k].position.x && carsFront[k].position.z > 22.5 && carsFront[k].position.z < 54.7){
+                                car_overTaken = carsFront.splice(k, 1);
+                                carsBehind.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall5) {
-                        if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 140 && carsFront[k].position.x < 171.9){
-                            car_overTaken = carsFront.splice(k, 1);
-                            carsBehind.push(car_overTaken[0]);
+                        else if (!wall5) {
+                            if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 140 && carsFront[k].position.x < 171.9){
+                                car_overTaken = carsFront.splice(k, 1);
+                                carsBehind.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall6) {
-                        if (car.position.x > carsFront[k].position.x && carsFront[k].position.z > -186.4 && carsFront[k].position.z < -154.3){
-                            car_overTaken = carsFront.splice(k, 1);
-                            carsBehind.push(car_overTaken[0]);
+                        else if (!wall6) {
+                            if (car.position.x > carsFront[k].position.x && carsFront[k].position.z > -186.4 && carsFront[k].position.z < -154.3){
+                                car_overTaken = carsFront.splice(k, 1);
+                                carsBehind.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall7) {
-                        if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 387 && carsFront[k].position.x < 419){
-                            car_overTaken = carsFront.splice(k, 1);
-                            carsBehind.push(car_overTaken[0]);
+                        else if (!wall7) {
+                            if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 387 && carsFront[k].position.x < 419){
+                                car_overTaken = carsFront.splice(k, 1);
+                                carsBehind.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall8) {
-                        if (car.position.x > carsFront[k].position.x && carsFront[k].position.z > -463 && carsFront[k].position.x < -432.4){
-                            car_overTaken = carsFront.splice(k, 1);
-                            carsBehind.push(car_overTaken[0]);
+                        else if (!wall8) {
+                            if (car.position.x > carsFront[k].position.x && carsFront[k].position.z > -463 && carsFront[k].position.x < -432.4){
+                                car_overTaken = carsFront.splice(k, 1);
+                                carsBehind.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
                     }
                 }
                 // 2) we are passively overtaken
                 for (var k=0; k<carsBehind.length; k++){
-                    if (!wall1) {
-                        if (car.position.z < carsBehind[k].position.z && carsBehind[k].position.x > 634 && carsBehind[k].position.x < 663){
-                            car_overTaken = carsBehind.splice(k, 1);
-                            carsFront.push(car_overTaken[0]);
+                    if(carsBehind[k].lap == lap){
+                        if (!wall1) {
+                            if (car.position.z < carsBehind[k].position.z && carsBehind[k].position.x > 634 && carsBehind[k].position.x < 663){
+                                car_overTaken = carsBehind.splice(k, 1);
+                                carsFront.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall2) {
-                        if (car.position.x > carsBehind[k].position.x && carsBehind[k].position.z > 288.5 && carsBehind[k].position.z < 320){
-                            car_overTaken = carsBehind.splice(k, 1);
-                            carsFront.push(car_overTaken[0]);
+                        else if (!wall2) {
+                            if (car.position.x > carsBehind[k].position.x && carsBehind[k].position.z > 288.5 && carsBehind[k].position.z < 320){
+                                car_overTaken = carsBehind.splice(k, 1);
+                                carsFront.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall3) {
-                        if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 387 && carsBehind[k].position.x < 419){
-                            car_overTaken = carsBehind.splice(k, 1);
-                            carsFront.push(car_overTaken[0]);
+                        else if (!wall3) {
+                            if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 387 && carsBehind[k].position.x < 419){
+                                car_overTaken = carsBehind.splice(k, 1);
+                                carsFront.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall4) {
-                        if (car.position.x > carsBehind[k].position.x && carsBehind[k].position.z > 22.5 && carsBehind[k].position.z < 54.7){
-                            car_overTaken = carsBehind.splice(k, 1);
-                            carsFront.push(car_overTaken[0]);
+                        else if (!wall4) {
+                            if (car.position.x > carsBehind[k].position.x && carsBehind[k].position.z > 22.5 && carsBehind[k].position.z < 54.7){
+                                car_overTaken = carsBehind.splice(k, 1);
+                                carsFront.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall5) {
-                        if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 140 && carsBehind[k].position.x < 171.9){
-                            car_overTaken = carsBehind.splice(k, 1);
-                            carsFront.push(car_overTaken[0]);
+                        else if (!wall5) {
+                            if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 140 && carsBehind[k].position.x < 171.9){
+                                car_overTaken = carsBehind.splice(k, 1);
+                                carsFront.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall6) {
-                        if (car.position.x < carsBehind[k].position.x && carsBehind[k].position.z > -186.4 && carsBehind[k].position.z < -154.3){
-                            car_overTaken = carsBehind.splice(k, 1);
-                            carsFront.push(car_overTaken[0]);
+                        else if (!wall6) {
+                            if (car.position.x < carsBehind[k].position.x && carsBehind[k].position.z > -186.4 && carsBehind[k].position.z < -154.3){
+                                car_overTaken = carsBehind.splice(k, 1);
+                                carsFront.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall7) {
-                        if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 387 && carsBehind[k].position.x < 419){
-                            car_overTaken = carsBehind.splice(k, 1);
-                            carsFront.push(car_overTaken[0]);
+                        else if (!wall7) {
+                            if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 387 && carsBehind[k].position.x < 419){
+                                car_overTaken = carsBehind.splice(k, 1);
+                                carsFront.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
-                    }
-                    else if (!wall8) {
-                        if (car.position.x < carsBehind[k].position.x && carsBehind[k].position.z > -463 && carsBehind[k].position.x < -432.4){
-                            car_overTaken = carsBehind.splice(k, 1);
-                            carsFront.push(car_overTaken[0]);
+                        else if (!wall8) {
+                            if (car.position.x < carsBehind[k].position.x && carsBehind[k].position.z > -463 && carsBehind[k].position.x < -432.4){
+                                car_overTaken = carsBehind.splice(k, 1);
+                                carsFront.push(car_overTaken[0]);
 
-                            x2.text = 'Position: ' + String(carsFront.length + 1);
+                                x2.text = 'Position: ' + String(carsFront.length + 1);
+                            }
                         }
                     }
                 }
@@ -1586,6 +1598,27 @@
                         half_lap = false;
                     }
                     var speed = base_speed + acceleration + sprint - impedance;
+
+                    // cpu lap
+                    if (car1.position.z < -65 && car1.position.z > -70 && car1.position.x > 140 && car1.position.x < 172)
+                        half_lap1 = true;
+                    if (car2.position.z < -65 && car2.position.z > -70 && car2.position.x > 140 && car2.position.x < 172)
+                        half_lap2 = true;
+                    if (car3.position.z < -65 && car3.position.z > -70 && car3.position.x > 140 && car3.position.x < 172)
+                        half_lap3 = true;
+                    
+                    if(half_lap1 && car1.position.z <153 && car1.position.z >150 && car1.position.x < 666.3 && car1.position.x > 634){
+                        half_lap1 = false;
+                        car1.lap += 1;
+                    }
+                    if(half_lap2 && car2.position.z <153 && car2.position.z >150 && car2.position.x < 666.3 && car2.position.x > 634){
+                        half_lap2 = false;
+                        car2.lap += 1;
+                    }
+                    if(half_lap3 && car3.position.z <153 && car3.position.z >150 && car3.position.x < 666.3 && car3.position.x > 634){
+                        half_lap3 = false;
+                        car3.lap += 1;
+                    }
                 }
                 // end game
                 else{
@@ -1680,7 +1713,7 @@
                                             // moreover we will position the red shell aligned to the target car, in this way it will always
                                             // go straight but it will ALMOST certainly hit the car
                                             // N.B. this is another further simplification but it is more easy to implement
-                                            if ((car.position.x > -16 && car.position.x < 15) || (car.position.x > 603 && car.position.x < 635)) item.position.x = targetCar.position.x;
+                                            if (wall1||wall3||wall5||wall7) item.position.x = targetCar.position.x;
                                             else item.position.z = targetCar.position.z;
                                         }
                                     }
