@@ -1233,7 +1233,10 @@
                 }
 
                 // updating of the index checkpoint through the path
-                if (index < 3 || index > 10){
+                if(index == 0){
+                    index += 1;
+                }
+                else if (index < 3 || index > 10){
                     if (car.position.z > ckpts[index].z) index +=1;
                 }
                 else if (index == 3 || index == 4){
