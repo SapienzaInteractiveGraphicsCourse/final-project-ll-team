@@ -882,16 +882,16 @@
             });
 
             // here we handle the animation of the other three cars in the race
-            const animCarX1 = new BABYLON.Animation("canAnimationx1", "position.x", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animCarZ1 = new BABYLON.Animation("canAnimationz1", "position.z", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarX1 = new BABYLON.Animation("canAnimationx1", "position.x", 55, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ1 = new BABYLON.Animation("canAnimationz1", "position.z", 55, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
             
-            const animCarX2 = new BABYLON.Animation("canAnimationx2", "position.x", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animCarZ2 = new BABYLON.Animation("canAnimationz2", "position.z", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarX2 = new BABYLON.Animation("canAnimationx2", "position.x", 55, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ2 = new BABYLON.Animation("canAnimationz2", "position.z", 55, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
-            const animCarX3 = new BABYLON.Animation("canAnimationx3", "position.x", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-            const animCarZ3 = new BABYLON.Animation("canAnimationz3", "position.z", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarX3 = new BABYLON.Animation("canAnimationx3", "position.x", 55, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const animCarZ3 = new BABYLON.Animation("canAnimationz3", "position.z", 55, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
-            const rotCar = new BABYLON.Animation("rotAnimationz1", "rotation.y", 50, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            const rotCar = new BABYLON.Animation("rotAnimationz1", "rotation.y", 55, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
 
             const carKeysX1 = [];
             const carKeysZ1 = [];
@@ -1391,7 +1391,7 @@
                 // control overtakings:
                 // 1) we actively overtake
                 for (var k=0; k<carsFront.length; k++){
-                    if(carsFront[k].lap == lap){
+                    if(carsFront[k].lap <= lap){
                         if (!wall1) {
                             if (car.position.z > carsFront[k].position.z && carsFront[k].position.x > 634 && carsFront[k].position.x < 663){
                                 car_overTaken = carsFront.splice(k, 1);
