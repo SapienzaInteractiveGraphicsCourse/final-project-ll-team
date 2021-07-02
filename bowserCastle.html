@@ -1040,8 +1040,10 @@
             var pos = true;
 
             // timer
-            var timer = setInterval(function(){ 
-                x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(raceTime);
+            var timer = setInterval(function(){
+                if(lap <= 3){
+                    x1.text = 'Lap ' + String(lap) + '/3' + '\n Time: ' + String(raceTime);
+                }
             }, 10);
 
             function endGame(){
