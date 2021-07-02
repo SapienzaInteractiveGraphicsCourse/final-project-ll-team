@@ -70,12 +70,12 @@
             camera.attachControl(canvas, true);
 
             // in Rainbow Road we have a sunlight: the most similar light in BabylonJS is the hemispheric light
-            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, -1), scene);
             // the light is placed near the sun (see ske section below)
-            light.position = new BABYLON.Vector3(0, 20, -10000);
+            light.position = new BABYLON.Vector3(269, 20, -10000);
             // lighting - 1
             // ambient color requires the ambient color of the scene to be set
-            scene.ambientColor = new BABYLON.Color3(1, 1, 1);
+            scene.ambientColor = new BABYLON.Color3(0, 0, 0);
 
             // Sky material
             var skyboxMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
@@ -105,17 +105,50 @@
             groundMat = new BABYLON.StandardMaterial("groundMat");
             // lighting - a diffure texture for rendering the grass field is fine
             groundMat.diffuseTexture = new BABYLON.Texture("textures/earth.png");
-            
             ground = BABYLON.MeshBuilder.CreateSphere("ground", {diameter: 600}, scene);
             ground.rotation.x = Math.PI / 2;
             ground.position.x = 325;
             ground.position.y = -100;
-            ground.position.z = 1200;
+            ground.position.z = 2000;
             ground.material = groundMat;
             ground.rotationQuaternion = null;
 
             // building the environment around the street
+            // we can create a realistic Milky Way, :), using a BabylonJS Point Cloud System (pcs)
+            // and adapt it to a torus volume surface  
+            var milkyWay = BABYLON.MeshBuilder.CreateTorus("tk", {diameter: 10000, thickness: 1000}, scene);
+            milkyWay.rotation.z = Math.PI / 12;
+            var pcs = new BABYLON.PointsCloudSystem("pcs", 2, scene) 
+            pcs.addVolumePoints(milkyWay, 50000, BABYLON.PointColor.Stated, new BABYLON.Color3(0.8, 0.8, 0.8));
+            pcs.buildMeshAsync().then(() => milkyWay.dispose());
+
+            // and add also lots of beautiful stars (here with a PCS on a sphere)
+            var sphere = BABYLON.MeshBuilder.CreateSphere("stars", {diameter: 10000}, scene);
+            var pcs1 = new BABYLON.PointsCloudSystem("pcs1", 1, scene) 
+            pcs1.addVolumePoints(sphere, 25000, BABYLON.PointColor.Stated, new BABYLON.Color3(0.8, 0.8, 0.8));
+            pcs1.buildMeshAsync().then(() => sphere.dispose());
+
+            // lighting: all these stars and the milky way (even if infinitely far away) emit some light
+            // however, since in BabylonJS a material can handle max 4 lights, we will instantiate other
+            // three lights put in the 'corner' of the image to simulate a uniform illumination
+            // the best light to produce this effect is a PointLight
+            var light1 = new BABYLON.PointLight("light", new BABYLON.Vector3(-10000, 0, 0), scene);
+            light1.diffuse = new BABYLON.Color3(0.8, 0.8, 0.8);
+            light1.specular = new BABYLON.Color3(0.8, 0.8, 0.8);
+    
+            var light2 = new BABYLON.PointLight("light", new BABYLON.Vector3(10000, 0, 0), scene);
+            light2.diffuse = new BABYLON.Color3(0.8, 0.8, 0.8);
+            light2.specular = new BABYLON.Color3(0.8, 0.8, 0.8);
+
+            var light3 = new BABYLON.PointLight("light", new BABYLON.Vector3(10000, 0, 10000), scene);
+            light3.diffuse = new BABYLON.Color3(0.8, 0.8, 0.8);
+            light3.specular = new BABYLON.Color3(0.8, 0.8, 0.8);
             
+            // these lights are very very far: let's riduce their intensity
+            light1.intensity = 0.2;
+            light2.intensity = 0.2;
+            light3.intensity = 0.2;
+    
             BABYLON.SceneLoader.ImportMeshAsync("", "models/finish_line/", "scene.gltf", scene).then((result) => {
                 finish = result.meshes[0];
                 finish.scaling = new BABYLON.Vector3(-1.1, 0.8, 0.9);
@@ -195,6 +228,40 @@
             other_street.position.z = pos_z-2.5;
             other_street.position.x = pos_x;
             
+            // adding some other details to improve the environment
+            const discMat = new BABYLON.StandardMaterial("discMat");
+            discMat.diffuseTexture = new BABYLON.Texture("textures/r_ring01.png");
+            discMat.diffuseTexture.hasAlpha = true;
+            const disc = BABYLON.MeshBuilder.CreateBox("disc", {width:15, height:30, depth:0});
+            disc.position.y = 8;
+            disc.position.z = -309;
+            disc.rotationQuaternion = null;
+            disc.rotation.z = -Math.PI / 2;
+            disc.material = discMat;
+
+            for (var i = 0; i<5; i++){
+                otherDisc = disc.clone();
+                if (i==0) otherDisc.position.z = 309;
+                else if (i==1){
+                    otherDisc.position.x = 269;
+                    otherDisc.position.z = 465;
+                    otherDisc.rotation.y = Math.PI / 2;
+                }
+                else if (i==2){
+                    otherDisc.position.x = 540;
+                    otherDisc.position.z = 309;
+                }
+                else if (i==3){
+                    otherDisc.position.x = 540;
+                    otherDisc.position.z = -309;
+                }
+                else {
+                    otherDisc.position.x = 269;
+                    otherDisc.position.z = -430;
+                    otherDisc.rotation.y = Math.PI / 2;
+                }
+            }
+
             // user's car
             if(character_name == 'mario')
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_mario/", "scene.gltf", scene).then((result) => {
@@ -883,13 +950,13 @@
             
             // decomment these lines if you want to test the paths of the computer-controlled cars
             // Creation of a lines mesh
-            
+            /*
             var lines1 = BABYLON.MeshBuilder.CreateLines("lines", {points: points1}, scene);
             var lines2 = BABYLON.MeshBuilder.CreateLines("lines", {points: points2}, scene);
             lines2.color = new BABYLON.Color3(1, 0, 0);
             var lines3 = BABYLON.MeshBuilder.CreateLines("lines", {points: points3}, scene);
             lines3.color = new BABYLON.Color3(0, 1, 0);
-            
+            */
 
             var base_speed = 0.5;
             // velocity increment when shell is thrown ...
@@ -1184,13 +1251,13 @@
                 // check over the vertical walls
                 if (car.position.x < -15 && car.position.z > -446 && car.position.z < 481) wall_vert1 = true;                     
                 if (car.position.x > 15 && car.position.x < 20 && car.position.z > -414 && car.position.z < 449) wall_vert_op1 = true;                     
-                if (car.position.x > 553 && car.position.z > -446 && car.position.z < 481) wall_vert2 = true;                     
-                if (car.position.x < 521 && car.position.x > 519 && car.position.z > -414 && car.position.z < 449) wall_vert_op2 = true;                     
+                if (car.position.x > 555 && car.position.z > -446 && car.position.z < 481) wall_vert2 = true;                     
+                if (car.position.x < 523 && car.position.x > 519 && car.position.z > -414 && car.position.z < 449) wall_vert_op2 = true;                     
                 // check over the horizontal walls
-                if (car.position.x > -15 && car.position.x < 553 && car.position.z > 481) wall_horiz1 = true;
-                if (car.position.x > -15 && car.position.x < 553 && car.position.z < -446) wall_horiz2 = true;
-                if (car.position.x > 15 && car.position.x < 521 && car.position.z < 449 && car.position.z > 447) wall_horiz_op1 = true;
-                if (car.position.x > 15 && car.position.x < 521 && car.position.z < -412 && car.position.z > -414) wall_horiz_op2 = true;
+                if (car.position.x > -15 && car.position.x < 555 && car.position.z > 481) wall_horiz1 = true;
+                if (car.position.x > -15 && car.position.x < 555 && car.position.z < -446) wall_horiz2 = true;
+                if (car.position.x > 15 && car.position.x < 523 && car.position.z < 449 && car.position.z > 447) wall_horiz_op1 = true;
+                if (car.position.x > 15 && car.position.x < 523 && car.position.z < -412 && car.position.z > -414) wall_horiz_op2 = true;
                 
                 // falling down routine
                 if (wall_vert1 || wall_vert_op1 || wall_vert2 || wall_vert_op2 || wall_horiz1 || wall_horiz2 || wall_horiz_op1 || wall_horiz_op2){
@@ -1496,7 +1563,7 @@
                                             // moreover we will position the red shell aligned to the target car, in this way it will always
                                             // go straight but it will ALMOST certainly hit the car
                                             // N.B. this is another further simplification but it is more easy to implement
-                                            if ((car.position.x > -16 && car.position.x < 15) || (car.position.x > 603 && car.position.x < 635)) item.position.x = targetCar.position.x;
+                                            if ((car.position.x > -15 && car.position.x < 15) || (car.position.x > 523 && car.position.x < 555)) item.position.x = targetCar.position.x;
                                             else item.position.z = targetCar.position.z;
                                         }
                                     }
