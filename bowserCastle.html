@@ -71,52 +71,39 @@
 
             //const light = new BABYLON.PointLight("light", new BABYLON.Vector3(-100, 100, 0), scene);
 
-            // hemispheric for the moment
+            /* let's describe briefly how we habe imagined this environment:
+             * we are INSIDE the castle of Bowser, therefore there is no sky (SkyBox and SkyMaterial on BabylonJS)
+             * moreover, we want to render a slightly dark environment typical of a closed scene: we have only one light
+             * on the imaginary ceiling of the castle that emits lights like a lamp: a HemispericLight is again
+             * appropriate for this case
+            */
+            // hemispheric light pointing downward => (0, 1, 0) ...
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-            light.position = new BABYLON.Vector3(0, 20, -10000);
+            // ... placed on the ceiling (for the position see the 'castle' instance below)
+            light.position = new BABYLON.Vector3(325, 642, -60);
             
             // lighting - 1
             // ambient color requires the ambient color of the scene to be set
-            scene.ambientColor = new BABYLON.Color3(1, 1, 1);
+            scene.ambientColor = new BABYLON.Color3(0, 0, 0);
 
-            // Sky material
-            var skyboxMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
-            skyboxMaterial.backFaceCulling = false;
-            /*
-            skyboxMaterial.turbidity = 0;
-            skyboxMaterial.azimuth = 0.29;
-            skyboxMaterial.inclination = 0.5;
-            skyboxMaterial.luminance = 1;
-            */
-
-            //skyboxMaterial._cachedDefines.FOG = true;
-
-            // Sky mesh (box)
-            var skybox = BABYLON.Mesh.CreateBox("skyBox", 10000.0, scene);
-            skybox.material = skyboxMaterial;
-
-            var setSkyConfig = function (property, from, to) {
-                var keys = [
-                    { frame: 0, value: from },
-                    { frame: 100, value: to }
-                ];
-                
-                var animation = new BABYLON.Animation("animation", property, 100, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-                animation.setKeys(keys);
-                
-                scene.stopAnimation(skybox);
-                scene.beginDirectAnimation(skybox, [animation], 0, 100, false, 1);
-            };
-            // Set to Day
-            //setSkyConfig("material.inclination", skyboxMaterial.inclination, 0);
+            // we can define a big semi-sphere around the ground to simulate the castle
+            const castle= BABYLON.MeshBuilder.CreateSphere("castle", {slice: 0.5, diameter: 1300, sideOrientation: BABYLON.Mesh.DOUBLESIDE});
+            castle.position.z = -60;
+            castle.position.x = 325;
+            castle.position.y = -8;
+            // simple black texture to the castle
+            const castleMat = new BABYLON.StandardMaterial("castleMat");
+            castleMat.diffuseColor = new BABYLON.Color3(0, 0, 0);
+            castle.material = castleMat;
 
             // lava material for the ground
             var lavaMaterial = new BABYLON.LavaMaterial("lava", scene);
             lavaMaterial.noiseTexture = new BABYLON.Texture("textures/bump.jpg", scene);
             lavaMaterial.diffuseTexture = new BABYLON.Texture("textures/magma.jpg", scene);
             
-            const ground = BABYLON.MeshBuilder.CreateDisc("ground", {radius: 650}, scene);
+            const ground = BABYLON.MeshBuilder.CreateDisc("ground", {radius: 650}, scene); // radius = 650 = castle diameter / 2 = 1300 / 2
             ground.rotation.x = Math.PI / 2;
+            // same position on the castle
             ground.position.x = 325;
             ground.position.y = -2.5;
             ground.position.z = -60;
@@ -132,7 +119,7 @@
                 finish = result.meshes[0];
                 finish.scaling = new BABYLON.Vector3(-1.1, 0.8, 0.9);
                 finish.position.y = -1;
-                finish.position.x = 650;
+                finish.position.x = 650
                 finish.position.z = 150;
 
                 finish.rotation.y = Math.PI;
@@ -504,7 +491,7 @@
                 });
                 
                 countSound.onended = function(){
-                    startRace(car);
+                    //startRace(car);
                 }
             };
             return scene;
