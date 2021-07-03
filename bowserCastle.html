@@ -1031,6 +1031,7 @@
             // if we need to reproduce the sound of the fall and to save the current position
             var s = true;
             var pos = true;
+            var doAnim = true;
 
             // timer
             var timer = setInterval(function(){
@@ -1256,8 +1257,8 @@
                             if (k == 0){
                                 setTimeout(function(){
                                     if(item){
-                                            item.position.z = car.position.z;
-                                            item.position.x = car.position.x;
+                                        item.position.z = car.position.z;
+                                        item.position.x = car.position.x;
                                     }
                                 }, 3000);
                             }
@@ -1338,7 +1339,8 @@
                 if (car.position.x > 387 && car.position.x < 666.3 && car.position.z < -432.4 && car.position.z > -463) wall8 = false;
 
                 // falling down routine
-                if (wall1&&wall2&&wall3&&wall4&&wall5&&wall6&&wall7&&wall8){
+                if (doAnim&&wall1&&wall2&&wall3&&wall4&&wall5&&wall6&&wall7&&wall8){
+                    /*
                     car.position.y -= 0.5;
                     
                     if (pos  == true){
@@ -1348,28 +1350,52 @@
                     }
                     car.position.x = posX;
                     car.position.z = posZ;
-                                
+                    */
+                    doAnim = false;
+
+                    if (pos  == true){
+                        posX = car.position.x;
+                        posY = car.position.y;
+                        posZ = car.position.z;
+                        pos = false;
+                    }
+
+                    var animationBurnX = new BABYLON.Animation("burnX", "position.x", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                    var animationBurnY = new BABYLON.Animation("burnX", "position.y", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                    var animationBurnZ = new BABYLON.Animation("burnX", "position.z", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                    
+                    var keysX = [{ "frame": 0, "value": posX }, { "frame": 30, "value": (posX+ckpts[index-1].x) / 2 },{ "frame": 60, "value": ckpts[index-1].x }];
+                    var keysY = [{ "frame": 0, "value": posY }, { "frame": 30, "value": posY + 20 },{ "frame": 60, "value": ckpts[index-1].y }];
+                    var keysZ = [{ "frame": 0, "value": posZ }, { "frame": 30, "value": (posZ+ckpts[index-1].z) / 2 },{ "frame": 60, "value": ckpts[index-1].z }];
+
+                    animationBurnX.setKeys(keysX);
+                    animationBurnY.setKeys(keysY);
+                    animationBurnZ.setKeys(keysZ);
+
+                    var animBurn = scene.beginDirectAnimation(car, [animationBurnX, animationBurnY, animationBurnZ], 0, 60, false);
+
                     if (s == true){
-                        soundFall = new BABYLON.Sound("soundFall", "sounds/mk64_mario06.wav", scene, function(){
-                            soundFall.play();
+                        soundBurn = new BABYLON.Sound("soundBurn", "sounds/sm64_mario_burned.wav", scene, function(){
+                            soundBurn.play();
                             s = false;
                         });
-                       
+                    
                     }
-                    if (car.position.y < -40){
-                        
-                        var endWorldTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-                        var textBlock = new BABYLON.GUI.TextBlock("text", '');   
-                        textBlock.color = "orange";
-                        textBlock.fontSize = 100;
-                        textBlock.fontFamily = "impact";
-                        endWorldTexture.addControl(textBlock);
-                        textBlock.text = "You have fallen in the lava..\n Try to stay on the track!";
-                        var handle = window.setInterval(() => {
-                            window.clearInterval(handle);
-                            textBlock.dispose();
-                            endWorldTexture.dispose();
-                        }, 3000);
+
+                    var endWorldTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                    var textBlock = new BABYLON.GUI.TextBlock("text", '');   
+                    textBlock.color = "orange";
+                    textBlock.fontSize = 100;
+                    textBlock.fontFamily = "impact";
+                    endWorldTexture.addControl(textBlock);
+                    textBlock.text = "You have been burnt by the lava..\n Try to stay on the track!";
+                    var handle = window.setInterval(() => {
+                        window.clearInterval(handle);
+                        textBlock.dispose();
+                        endWorldTexture.dispose();
+                    }, 3000);
+                    
+                    animBurn.onAnimationEnd = function () {
 
                         car.position.x = ckpts[index-1].x;
                         car.position.y = ckpts[index-1].y;
@@ -1386,7 +1412,9 @@
                         //index = (index - 1) % (ckpts.length - 1);
                         s = true;
                         pos = true;
+                        doAnim = true;
                     }
+                    
                 }
 
                 // control overtakings:
