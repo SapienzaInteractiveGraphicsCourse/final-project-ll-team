@@ -641,9 +641,28 @@
             points2.push(points2[0]); // push to close path
             points3.push(points3[0]); // push to close path
 
+            return scene;
+        };
+
+        const scene = createScene(); //Call the createScene function
+
+        var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        var button = BABYLON.GUI.Button.CreateImageButton("but", "Welcome to Luigi Circuit!             \nClick to start the race.             ", "");
+        button.height = "100px";
+        button.width = "350px";
+        button.background = 'green';
+        button.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        button.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        advancedTexture.addControl(button);
+        button.pointerDownAnimation = () => {
+            advancedTexture.dispose();
+            startSounds();
+        };
+
+        function startSounds(){
             // adding sounds
             const soundStart = new BABYLON.Sound("soundStart", "sounds/mk64_racestart.wav", scene, function(){
-                soundStart.play();
+                    soundStart.play();
             });
 
             // once the start sound is over we proceed with the countdown
@@ -682,8 +701,7 @@
                     startRace(car);
                 }
             };
-            return scene;
-        };
+        }
 
         // this fn creates a set of four aligned (along x- or z-axis) item boxes
         function createItemBoxLine(scene, starting_pos, alignedX, opposed){
@@ -1852,8 +1870,6 @@
                 }
             });
         }
-
-        const scene = createScene(); //Call the createScene function
         
         // Register a render loop to repeatedly render the scene
         engine.runRenderLoop(function () {
