@@ -46,6 +46,7 @@
         var goodItemPos = [], goodItems = [];
         // arrays for the paths for the computer-controlled cars
         var points1 = [], points2 = [], points3 = [];
+        
         // arrays to store the checkpoints in case of falls from the race truck ...
         var ckpts = [];
         // ... together with the index of the current checkpoints that will be incremented every time we take an item
@@ -82,7 +83,6 @@
             // Sky material
             var skyboxMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
             skyboxMaterial.backFaceCulling = false;
-            //skyboxMaterial._cachedDefines.FOG = true;
 
             // Sky mesh (box)
             var skybox = BABYLON.Mesh.CreateBox("skyBox", 10000.0, scene);
@@ -150,7 +150,8 @@
             light1.intensity = 0.2;
             light2.intensity = 0.2;
             light3.intensity = 0.2;
-    
+
+            // finish line
             BABYLON.SceneLoader.ImportMeshAsync("", "models/finish_line/", "scene.gltf", scene).then((result) => {
                 finish = result.meshes[0];
                 finish.scaling = new BABYLON.Vector3(-1.1, 0.8, 0.9);
@@ -397,7 +398,7 @@
             }
             ckpts.push(new BABYLON.Vector4(0, 0.7, 0, Math.PI));
 
-            // these functions are asynchronous, we need to pay attention in the pushes
+            // creating the item boxes and pushing points for the cpu's path
             createItemBoxLine(scene, [-7, 1, 130], true, false);
             createItemBoxLine(scene, [-7, 1, 300], true, false);
 
@@ -453,8 +454,9 @@
             return scene;
         };
 
-        const scene = createScene(); //Call the createScene function
+        const scene = createScene(); // Call the createScene function
 
+        // initial button
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
         var button = BABYLON.GUI.Button.CreateImageButton("but", "Welcome to Rainbow Road!           \nClick to start the race.             ", "");
         button.height = "100px";
@@ -819,6 +821,7 @@
             // moreover, we will always use the carsFront array to determine our position during the race, in fact:
             var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
+            // user interface
             let x1 = new BABYLON.GUI.TextBlock('TextBlock', ''); 
             x1.fontSize = 50;
             x1.fontFamily = "impact";
@@ -1010,6 +1013,7 @@
                 }
             }, 10);
 
+            // end game routine
             function endGame(){
                 clearInterval(timer);
                 carAnimation1.stop();
@@ -1322,8 +1326,7 @@
                         });
                        
                     }
-                    if (car.position.y < -100){
-                        
+                    if (car.position.y < -100){                        
                         var endWorldTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                         var textBlock = new BABYLON.GUI.TextBlock("text", '');   
                         textBlock.color = "orange";
