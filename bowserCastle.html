@@ -46,11 +46,13 @@
         var goodItemPos = [], goodItems = [];
         // arrays for the paths for the computer-controlled cars
         var points1 = [], points2 = [], points3 = [];
+        
         // arrays to store the checkpoints in case of falls from the race truck ...
         var ckpts = [];
         // ... together with the index of the current checkpoints that will be incremented every time we take an item
         var index = 0;
         var posX, posZ;
+
         var raceTime = 0;
 
         var groundMat, streetMat, bleachersMat;
@@ -69,9 +71,7 @@
             const camera = new BABYLON.FollowCamera("camera", new BABYLON.Vector3(0, 0, 0), scene);
             camera.attachControl(canvas, true);
 
-            //const light = new BABYLON.PointLight("light", new BABYLON.Vector3(-100, 100, 0), scene);
-
-            /* let's describe briefly how we habe imagined this environment:
+            /* let's describe briefly how we have imagined this environment:
              * we are INSIDE the castle of Bowser, therefore there is no sky (SkyBox and SkyMaterial on BabylonJS)
              * moreover, we want to render a slightly dark environment typical of a closed scene: we have only one light
              * on the imaginary ceiling of the castle that emits lights like a lamp: a HemispericLight is again
@@ -114,7 +114,7 @@
             lavaMaterial.fogColor = new BABYLON.Color3(1, 0.55, 0.15);
 
             // building the environment around the street
-            
+            // finish line
             BABYLON.SceneLoader.ImportMeshAsync("", "models/finish_line/", "scene.gltf", scene).then((result) => {
                 finish = result.meshes[0];
                 finish.scaling = new BABYLON.Vector3(-1.1, 0.8, 0.9);
@@ -410,7 +410,7 @@
             }
             ckpts.push(new BABYLON.Vector4(645, 0.7, 120, Math.PI));
 
-            // these functions are asynchronous, we need to pay attention in the pushes
+            // creating the item boxes and pushing points for the cpu's path
             createItemBoxLine(scene, [643, 1, 230], true, false);
             points1.push(new BABYLON.Vector3(655, 1, 303)); // white
             points2.push(new BABYLON.Vector3(650, 1, 301)); // red
@@ -462,8 +462,9 @@
             return scene;
         };
 
-        const scene = createScene(); //Call the createScene function
+        const scene = createScene(); // Call the createScene function
 
+        // initial button
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
         var button = BABYLON.GUI.Button.CreateImageButton("but", "Welcome to Bowser's Castle!        \nClick to start the race.             ", "");
         button.height = "100px";
@@ -813,19 +814,6 @@
             }
         }
 
-        // if the car is out of the street I will have more friction
-        function setImpedance(car) {
-            impedance = 0.0;
-            
-            if ((car.position.z > -534 && car.position.z < 471 && car.position.x > -13 && car.position.x < 634)&&
-                 !(car.position.z > -507 && car.position.z < 444 && car.position.x > 13.5 && car.position.x < 607))
-                impedance = 0.0;
-            else
-                impedance = 0.3;
-
-            return impedance;
-        }
-
         var lap = 1;
         // arrays to store the cars in front of us or behind us
         var carsBehind = [], carsFront = [];
@@ -843,6 +831,7 @@
             // moreover, we will always use the carsFront array to determine our position during the race, in fact:
             var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
+            // user interface
             let x1 = new BABYLON.GUI.TextBlock('TextBlock', ''); 
             x1.fontSize = 50;
             x1.fontFamily = "impact";
@@ -889,7 +878,7 @@
             const bowserSound = new BABYLON.Sound("bowserSound", "sounds/Bowser's Castle.mp3", scene, null, {
                 loop: true,
                 autoplay: true,
-                volume: 1
+                volume: 0.9
             });
 
             // here we handle the animation of the other three cars in the race
@@ -1036,7 +1025,6 @@
             */
 
             var base_speed = 0.5;
-            var impedance = 0.0;
             // velocity increment when shell is thrown ...
             var throwed = 0;
             // ... but also when a mushroom is used
@@ -1058,6 +1046,7 @@
                 }
             }, 10);
 
+            // end game routine
             function endGame(){
                 clearInterval(timer);
                 carAnimation1.stop();
@@ -1142,7 +1131,7 @@
             scene.registerBeforeRender(function () {
                 var currentTime = new Date().getTime();
                 raceTime = (currentTime - startTime)/1000;
-                //impedance = setImpedance(car);
+
                 // collision car-itembox loop
                 for (i=0; i<itemBoxPos.length; i++){
                     if(car.position.x < itemBoxPos[i][0]+1.5 && car.position.x > itemBoxPos[i][0]-1.5 && car.position.z < itemBoxPos[i][2]+1.5 && car.position.z > itemBoxPos[i][2]-1.5){
@@ -1318,7 +1307,6 @@
                     }
                 }
 
-                // collision car-endWorld: (car_x-center_x)^2 + (car_z-center_z)^2 > radius^2
                 // updating of the index checkpoint through the path
                 if(index == 0){
                     index +=1;
@@ -1345,8 +1333,9 @@
                 wall6 = true;
                 wall7 = true;
                 wall8 = true;
+
                 // collision car-walls: fall down of the truck
-                // check over the vertical walls
+                // check where the car is
                 if (car.position.x > 634 && car.position.x < 666.3 && car.position.z < 320 && car.position.z > -463) wall1 = false;
                 if (car.position.x > 387 && car.position.x < 666.3 && car.position.z < 320 && car.position.z > 288.5) wall2 = false;
                 if (car.position.x > 387 && car.position.x < 419 && car.position.z < 320 && car.position.z > 22.5) wall3 = false;
@@ -1358,17 +1347,6 @@
 
                 // falling down routine
                 if (doAnim&&wall1&&wall2&&wall3&&wall4&&wall5&&wall6&&wall7&&wall8){
-                    /*
-                    car.position.y -= 0.5;
-                    
-                    if (pos  == true){
-                        posX = car.position.x;
-                        posZ = car.position.z;
-                        pos = false;
-                    }
-                    car.position.x = posX;
-                    car.position.z = posZ;
-                    */
                     doAnim = false;
 
                     if (pos  == true){
@@ -1397,7 +1375,6 @@
                             soundBurn.play();
                             s = false;
                         });
-                    
                     }
 
                     var endWorldTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
@@ -1578,20 +1555,20 @@
                 // game loop
                 if(lap <= 3){
                     // car's movement update
-                    car.position.z += (base_speed + acceleration + sprint - impedance) * Math.cos(angle);
-                    car.position.x += (base_speed + acceleration + sprint - impedance) * Math.sin(angle);
+                    car.position.z += (base_speed + acceleration + sprint) * Math.cos(angle);
+                    car.position.x += (base_speed + acceleration + sprint) * Math.sin(angle);
 
                     // item's movement update
                     if(item){
                         if(throwed == 0){
-                            item.position.z += (base_speed + acceleration + throwed + sprint - impedance) * Math.cos(angle);
-                            item.position.x += (base_speed + acceleration + throwed + sprint - impedance) * Math.sin(angle);
+                            item.position.z += (base_speed + acceleration + throwed + sprint) * Math.cos(angle);
+                            item.position.x += (base_speed + acceleration + throwed + sprint) * Math.sin(angle);
                             // saved to throw shell in the right direction
                             last_angle = angle;
                         }
                         else{
-                            item.position.z += (base_speed + acceleration + throwed + sprint - impedance) * Math.cos(last_angle);
-                            item.position.x += (base_speed + acceleration + throwed + sprint - impedance) * Math.sin(last_angle);
+                            item.position.z += (base_speed + acceleration + throwed + sprint) * Math.cos(last_angle);
+                            item.position.x += (base_speed + acceleration + throwed + sprint) * Math.sin(last_angle);
                         }
                                       
                     }
@@ -1646,7 +1623,7 @@
                         car.rotation.y = Math.PI;
                         half_lap = false;
                     }
-                    var speed = base_speed + acceleration + sprint - impedance;
+                    var speed = base_speed + acceleration + sprint;
 
                     // cpu lap
                     if (car1.position.z < -65 && car1.position.z > -70 && car1.position.x > 140 && car1.position.x < 172)
