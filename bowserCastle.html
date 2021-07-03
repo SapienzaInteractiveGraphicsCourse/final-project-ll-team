@@ -127,54 +127,80 @@
 
             });
 
-            /*
-            BABYLON.SceneLoader.ImportMeshAsync("", "models/brick_block/", "scene.gltf", scene).then((result) => {
-                wall = result.meshes[0];
-                wall.scaling = new BABYLON.Vector3(0.015, 0.004, 0.002);
-                wall.position.z = -440;
-                wall.position.y = -0.3;
-                wall.position.x = 15;
-                wall.rotation.y = Math.PI/2;
-                wall.rotationQuaternion = null;
+            // thwomps
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/thwomp/", "scene.gltf", scene).then((result) => {
+                // thwomps in first rettilineo
+                thwomp = result.meshes[0];
+                thwomp.scaling = new BABYLON.Vector3(1, 1, 1);
+                thwomp.position.z = 250;
+                thwomp.position.y = 5;
+                thwomp.position.x = 620;
+                thwomp.rotation.y = Math.PI/180*160;
+                thwomp.rotationQuaternion = null;
+                
+                other_thwomp = this.thwomp.clone()
+                other_thwomp.position.x += 60;
+                other_thwomp.rotation.y = Math.PI/180*200;
 
-                for(i=1; i<62; i++){
-                    other_wall = this.wall.clone()
-                    other_wall.position.z += i*13.1;
-                }
-                for(i=0; i<62; i++){
-                    other_wall = this.wall.clone()
-                    other_wall.position.x = -16;
-                    other_wall.position.z += i*13.1;
-                }
+                other_thwomp = this.thwomp.clone()
+                other_thwomp.position.z = -340;
 
-                for(i=0; i<62; i++){
-                    other_wall = this.wall.clone()
-                    other_wall.position.x = 603;
-                    other_wall.position.z += i*13.1;
-                }
-                for(i=0; i<62; i++){
-                    other_wall = this.wall.clone()
-                    other_wall.position.x = 635;
-                    other_wall.position.z += i*13.1;
-                }
+                other_thwomp = this.thwomp.clone()
+                other_thwomp.position.x += 60;
+                other_thwomp.position.z = -340;
+                other_thwomp.rotation.y = Math.PI/180*200;
+                
+                // far thwomps (in rettilineo 4 and 6)
+                other_thwomp = this.thwomp.clone()
+                other_thwomp.position.x = 250;
+                other_thwomp.position.z = 68;
+                other_thwomp.rotation.y = Math.PI/180*110;
 
-                for(i=0; i<31; i++){
-                    other_wall = this.wall.clone()
-                    other_wall.position.x = 115;
-                    other_wall.position.z = -503.5;
-                    other_wall.rotation.y = Math.PI;
-                    other_wall.position.x += i*13.1;
-                }
+                other_thwomp = this.thwomp.clone()
+                other_thwomp.position.x = 250;
+                other_thwomp.position.z = 10;
+                other_thwomp.rotation.y = Math.PI/180*70;
+                
+                other_thwomp = this.thwomp.clone()
+                other_thwomp.position.x = 310;
+                other_thwomp.position.z = -141;
+                other_thwomp.rotation.y = Math.PI/180*250;
 
-                for(i=0; i<31; i++){
-                    other_wall = this.wall.clone()
-                    other_wall.position.x = 115;
-                    other_wall.position.z = 442;
-                    other_wall.rotation.y = Math.PI;
-                    other_wall.position.x += i*13.1;
-                }
+                other_thwomp = this.thwomp.clone()
+                other_thwomp.position.x = 310;
+                other_thwomp.position.z = -199;
+                other_thwomp.rotation.y = Math.PI/180*290;
             });
-            */
+
+            // chain chomps
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/chain_chomp/", "scene.gltf", scene).then((result) => {
+                // chain in 3rd rettilineo
+                chain = result.meshes[0];
+                chain.scaling = new BABYLON.Vector3(0.15, 0.15, 0.15);
+                chain.position.z = 80;
+                chain.position.y = 8;
+                chain.position.x = 430;
+                chain.rotation.y = Math.PI/180*250;
+                chain.rotation.z = Math.PI/180*350;
+                chain.rotationQuaternion = null;
+                
+                // chain in 7th rettilineo
+                other_chain = this.chain.clone()
+                other_chain.position.x = 377;
+                other_chain.position.z = -380;
+                other_chain.rotation.y = Math.PI/180*290;
+            });
+
+            // bowser's statue
+            BABYLON.SceneLoader.ImportMeshAsync("", "models/bowser_statue/", "scene.gltf", scene).then((result) => {
+                statue = result.meshes[0];
+                statue.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
+                statue.position.z = -50;
+                statue.position.y = 35;
+                statue.position.x = 530;
+                statue.rotation.y = Math.PI*3/2;
+                statue.rotationQuaternion = null;
+            });
 
             // building the street
             streetMat = new BABYLON.StandardMaterial("streetMat");
