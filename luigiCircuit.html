@@ -67,6 +67,10 @@
 
             // in Luigi Circuit we have a sunlight: the most similar light in BabylonJS is the hemispheric light
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            // to simulate a strong yellowish light (i.e. Sun)
+            light.diffuse = new BABYLON.Color3(1, 1, 0.85);
+            light.specular = new BABYLON.Color3(1, 1, 0.75);
+            light.intensity = 2;
             
             // lighting - 1
             // ambient color requires the ambient color of the scene to be set
@@ -76,7 +80,6 @@
             // Sky material
             var skyboxMaterial = new BABYLON.SkyMaterial("skyMaterial", scene);
             skyboxMaterial.backFaceCulling = false;
-            //skyboxMaterial._cachedDefines.FOG = true;
 
             // Sky mesh (box)
             var skybox = BABYLON.Mesh.CreateBox("skyBox", 10000.0, scene);
@@ -109,6 +112,7 @@
             ground.position.z = -60;
             ground.material = groundMat;
 
+            // building the sand: here the car moves slower
             sandMat = new BABYLON.StandardMaterial("sandMat");
             sandMat.diffuseTexture = new BABYLON.Texture("textures/sand.png");
 
@@ -148,7 +152,7 @@
             other_sand.position.z = -486;
 
             // building the environment around the street
-            
+            // finish line
             BABYLON.SceneLoader.ImportMeshAsync("", "models/finish_line/", "scene.gltf", scene).then((result) => {
                 finish = result.meshes[0];
                 finish.scaling = new BABYLON.Vector3(-1.1, 0.8, 0.9);
@@ -161,6 +165,7 @@
 
             });
 
+            // walls
             BABYLON.SceneLoader.ImportMeshAsync("", "models/brick_block/", "scene.gltf", scene).then((result) => {
                 wall = result.meshes[0];
                 wall.scaling = new BABYLON.Vector3(0.015, 0.004, 0.002);
@@ -208,6 +213,7 @@
                 }
             });
 
+            // plants
             BABYLON.SceneLoader.ImportMeshAsync("", "models/piranha_plant_small/", "scene.gltf", scene).then((result) => {
                 plant = result.meshes[0];
                 plant.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
@@ -260,6 +266,8 @@
                 }
             });
 
+            // there was an easter egg but we decided to remove it :(
+            // I'll leave this banana here as a memory.
             BABYLON.SceneLoader.ImportMeshAsync("", "models/banana/", "scene.gltf", scene).then((result) => {
                 easter = result.meshes[0];
                 easter.scaling = new BABYLON.Vector3(0.002, 0.002, 0.002);
@@ -268,6 +276,7 @@
                 easter.position.x = 493;
             });
 
+            // bleachers
             bleacherMat = new BABYLON.StandardMaterial("bleacherMat");
             bleacherMat.diffuseTexture = new BABYLON.Texture("textures/bleacher.png");
             bleacherMat.diffuseTexture.hasAlpha = true;
@@ -289,6 +298,7 @@
                 other_bleacher.rotation.y = Math.PI/180 *290;
             }
 
+            // castle
             BABYLON.SceneLoader.ImportMeshAsync("", "models/castle/", "scene.gltf", scene).then((result) => {
                 castle = result.meshes[0];
                 castle.scaling = new BABYLON.Vector3(0.02, 0.02, 0.02);
@@ -299,6 +309,7 @@
                 castle.rotationQuaternion = null;
             });
 
+            // luigi in front of the castle
             BABYLON.SceneLoader.ImportMeshAsync("", "models/luigi/", "scene.gltf", scene).then((result) => {
                 luigi = result.meshes[0];
                 luigi.scaling = new BABYLON.Vector3(6.0, 6.0, 6.0);
@@ -588,7 +599,7 @@
                 });
             }
 
-            // these functions are asynchronous, we need to pay attention in the pushes
+            // creating the item boxes and pushing points for the cpu's path
             createItemBoxLine(scene, [-7, 1, 130], true, false);
             createItemBoxLine(scene, [-7, 1, 300], true, false);
 
@@ -644,8 +655,9 @@
             return scene;
         };
 
-        const scene = createScene(); //Call the createScene function
+        const scene = createScene(); // Call the createScene function
 
+        // initial button
         var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
         var button = BABYLON.GUI.Button.CreateImageButton("but", "Welcome to Luigi Circuit!             \nClick to start the race.             ", "");
         button.height = "100px";
@@ -667,7 +679,6 @@
 
             // once the start sound is over we proceed with the countdown
             soundStart.onended = function(){
-
                 // countdown for the race to start
                 var countTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                 var i = 3; // seconds
@@ -986,7 +997,7 @@
             }
         }
 
-        // if the car is out of the street I will have more friction
+        // if the car is out of the street or in the sand I will have more friction
         function setImpedance(car) {
             impedance = 0.0;
             
@@ -1016,6 +1027,7 @@
             // moreover, we will always use the carsFront array to determine our position during the race, in fact:
             var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
+            // user interface
             let x1 = new BABYLON.GUI.TextBlock('TextBlock', ''); 
             x1.fontSize = 50;
             x1.fontFamily = "impact";
@@ -1205,6 +1217,7 @@
                 }
             }, 10);
 
+            // end game routine
             function endGame(){
                 clearInterval(timer);
                 carAnimation1.stop();
@@ -1267,6 +1280,7 @@
                                 scoreTexture.dispose();
                             }, 10000);
                         }
+                        // else back to menu
                         else{
                             var scoreTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                             var textBlock = new BABYLON.GUI.TextBlock("text", '');   
@@ -1289,6 +1303,7 @@
                 var currentTime = new Date().getTime();
                 raceTime = (currentTime - startTime)/1000;
                 impedance = setImpedance(car);
+                
                 // collision car-itembox loop
                 for (i=0; i<itemBoxPos.length; i++){
                     if(car.position.x < itemBoxPos[i][0]+1.5 && car.position.x > itemBoxPos[i][0]-1.5 && car.position.z < itemBoxPos[i][2]+1.5 && car.position.z > itemBoxPos[i][2]-1.5){
@@ -1721,26 +1736,6 @@
                         });
                         endGame();
                     }
-                }
-
-                // Easter egg
-                if (car.position.x > 491.5 && car.position.x < 494.5 && car.position.z > 476.5 && car.position.z < 479.5){
-                    var easterTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-                    var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
-                    textBlock.color = "orange";
-                    textBlock.fontSize = 150;
-                    textBlock.fontFamily = "impact";
-                    easterTexture.addControl(textBlock);
-                    textBlock.text = "EASTER EGG FOUND!";
-                    var handle = window.setInterval(() => {
-                        window.clearInterval(handle);
-                        textBlock.dispose();
-                        easterTexture.dispose();
-                    }, 3000);
-
-                    setTimeout(function(){
-                        window.location.href = "easter.html";
-                    }, 4000);
                 }
             });
 
