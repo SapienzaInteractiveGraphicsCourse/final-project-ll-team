@@ -54,7 +54,7 @@
         var raceTime = 0;
 
         var groundMat, streetMat, bleachersMat;
-        var update_done = false;
+        var update_done = false, game_ended = false;
 
         if(parent.document.URL.indexOf('&') > 1){
                 var character_name = parent.document.URL.substring(parent.document.URL.indexOf('?')+11, parent.document.URL.indexOf('&'));
@@ -336,6 +336,7 @@
                     car1.rotationQuaternion = null;
                     car1.rotation.y = Math.PI;
                     car1.lap = 1;
+                    car1.half_lap = false;
                 });
             }
             else{
@@ -348,6 +349,7 @@
                     car1.rotationQuaternion = null;
                     car1.rotation.y = Math.PI;
                     car1.lap = 1;
+                    car1.half_lap = false;
                 });
             }
 
@@ -362,6 +364,7 @@
                     car2.rotationQuaternion = null;
                     car2.rotation.y = Math.PI;
                     car2.lap = 1;
+                    car2.half_lap = false;
                 });
             }
             else{
@@ -374,6 +377,7 @@
                     car2.rotationQuaternion = null;
                     car2.rotation.y = Math.PI;
                     car2.lap = 1;
+                    car2.half_lap = false;
                 });
             }
 
@@ -388,6 +392,7 @@
                     car3.rotationQuaternion = null;
                     car3.rotation.y = Math.PI;
                     car3.lap = 1;
+                    car3.half_lap = false;
                 });
             }
             else{
@@ -400,6 +405,7 @@
                     car3.rotationQuaternion = null;
                     car3.rotation.y = Math.PI;
                     car3.lap = 1;
+                    car3.half_lap = false;
                 });
             }
             ckpts.push(new BABYLON.Vector4(645, 0.7, 120, Math.PI));
@@ -491,7 +497,7 @@
                 });
                 
                 countSound.onended = function(){
-                    //startRace(car);
+                    startRace(car);
                 }
             };
             return scene;
@@ -1020,7 +1026,7 @@
             var acceleration = 0;
 
             // ensures that the user actually follows the track
-            var half_lap = false, half_lap1 = false, half_lap2 = false, half_lap3 = false;
+            var half_lap = false;
 
             // if we need to reproduce the sound of the fall and to save the current position
             var s = true;
@@ -1038,6 +1044,7 @@
                 carAnimation1.stop();
                 carAnimation2.stop();
                 carAnimation3.stop();
+                game_ended = true;
                 setTimeout(function(){
                     var finishTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                     var textBlock = new BABYLON.GUI.TextBlock("text", new String(i));   
@@ -1087,26 +1094,33 @@
                             textBlock.fontSize = 150;
                             textBlock.fontFamily = "impact";
                             scoreTexture.addControl(textBlock);
-                            textBlock.text = "YOUR CURRENT SCORE IS:\n" + String(score) + "/45";
+                            textBlock.text = "YOUR CURRENT SCORE IS:\n" + String(score) + "/45\nPress C to continue!";
                             var handle = window.setInterval(() => {
                                 window.clearInterval(handle);
                                 textBlock.dispose();
                                 scoreTexture.dispose();
-                            }, 6000);
-                            setTimeout(function(){
-                                window.location.href = "rainbowRoad.html?character="+character_name+"&score="+score.toString();
-                            }, 7000);
+                            }, 10000);
                         }
                         // else back to menu
                         else{
-                            window.location.href = "index.html";
+                            var scoreTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                            var textBlock = new BABYLON.GUI.TextBlock("text", '');   
+                            textBlock.color = "orange";
+                            textBlock.fontSize = 150;
+                            textBlock.fontFamily = "impact";
+                            scoreTexture.addControl(textBlock);
+                            textBlock.text = "Press C to continue!";
+                            var handle = window.setInterval(() => {
+                                window.clearInterval(handle);
+                                textBlock.dispose();
+                                scoreTexture.dispose();
+                            }, 10000);
                         }
                     }, 5500);
                 }, 1000);
             }
 
             scene.registerBeforeRender(function () {
-                console.log(car1.lap, car2.lap, car3.lap);
                 var currentTime = new Date().getTime();
                 raceTime = (currentTime - startTime)/1000;
                 //impedance = setImpedance(car);
@@ -1378,7 +1392,7 @@
                 // control overtakings:
                 // 1) we actively overtake
                 for (var k=0; k<carsFront.length; k++){
-                    if(carsFront[k].lap <= lap){
+                    if(carsFront[k].lap <= lap && carsFront[k].half_lap == half_lap){
                         if (!wall1) {
                             if (car.position.z > carsFront[k].position.z && carsFront[k].position.x > 634 && carsFront[k].position.x < 663){
                                 car_overTaken = carsFront.splice(k, 1);
@@ -1447,7 +1461,7 @@
                 }
                 // 2) we are passively overtaken
                 for (var k=0; k<carsBehind.length; k++){
-                    if(carsBehind[k].lap == lap){
+                    if(carsBehind[k].lap == lap && carsBehind[k].half_lap == half_lap){
                         if (!wall1) {
                             if (car.position.z < carsBehind[k].position.z && carsBehind[k].position.x > 634 && carsBehind[k].position.x < 663){
                                 car_overTaken = carsBehind.splice(k, 1);
@@ -1590,22 +1604,22 @@
 
                     // cpu lap
                     if (car1.position.z < -65 && car1.position.z > -70 && car1.position.x > 140 && car1.position.x < 172)
-                        half_lap1 = true;
+                        car1.half_lap = true;
                     if (car2.position.z < -65 && car2.position.z > -70 && car2.position.x > 140 && car2.position.x < 172)
-                        half_lap2 = true;
+                        car2.half_lap = true;
                     if (car3.position.z < -65 && car3.position.z > -70 && car3.position.x > 140 && car3.position.x < 172)
-                        half_lap3 = true;
+                        car3.half_lap = true;
                     
-                    if(half_lap1 && car1.position.z <153 && car1.position.z >150 && car1.position.x < 666.3 && car1.position.x > 634){
-                        half_lap1 = false;
+                    if(car1.half_lap && car1.position.z <153 && car1.position.z >150 && car1.position.x < 666.3 && car1.position.x > 634){
+                        car1.half_lap = false;
                         car1.lap += 1;
                     }
-                    if(half_lap2 && car2.position.z <153 && car2.position.z >150 && car2.position.x < 666.3 && car2.position.x > 634){
-                        half_lap2 = false;
+                    if(car2.half_lap && car2.position.z <153 && car2.position.z >150 && car2.position.x < 666.3 && car2.position.x > 634){
+                        car2.half_lap = false;
                         car2.lap += 1;
                     }
-                    if(half_lap3 && car3.position.z <153 && car3.position.z >150 && car3.position.x < 666.3 && car3.position.x > 634){
-                        half_lap3 = false;
+                    if(car3.half_lap && car3.position.z <153 && car3.position.z >150 && car3.position.x < 666.3 && car3.position.x > 634){
+                        car3.half_lap = false;
                         car3.lap += 1;
                     }
                 }
@@ -1735,6 +1749,16 @@
                             case "R":
                                 window.location.reload()
                                 break;
+
+                            case "c":
+                            case "C":
+                                if(game_ended){
+                                    if(parent.document.URL.indexOf('&') > 1)
+                                        window.location.href = "rainbowRoad.html?character="+character_name+"&score="+score.toString();
+                                    else
+                                        window.location.href = "index.html";
+                                }
+                                break;  
 
                             default:
                                 acceleration = 0;
