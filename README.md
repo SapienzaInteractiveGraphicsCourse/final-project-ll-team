@@ -41,7 +41,7 @@ We provide two race modalities that the user can select:
 - **Grand Prix**, a little tournament of three races where there is a cumulative score for each of them;
 - **Single race**, if the user wants to run one race only, just select the single race truck in the main menu during the game.
 
-Every race is composed of three laps and is a competition between the user car and three other CPU-controlled cars.
+Every race is composed of three laps and is a competition between the user car and three other CPU-controlled cars. We have implemented three different race trucks freely inspired on the originals by Nintendo: these are *Luigi Circuit*, *Bowser's Castle* and *Rainbow Road* such that each of them has its own peculiarities and personalized characteristics.
 
 ### Character selection
 
