@@ -79,7 +79,7 @@
 
     <audio id="music" autoplay loop><source src="sounds/mainmenu.mp3"></audio>
     <audio id = "mouse" src = "sounds/mouseover.mp3"></audio>
-
+    <audio id = "track_sound" src = "sounds/mk64_luigi03.wav"></audio>
     <audio id = "mario_sound" src = "sounds/mario.mp3"></audio>
     <audio id = "toad_sound" src = "sounds/toad.mp3"></audio>
     <audio id = "bowser_sound" src = "sounds/bowser.mp3"></audio>
@@ -148,6 +148,7 @@
         function selectionTrack(x){
             if(track != '')
                 document.getElementById(track).style.color = 'black';
+            document.getElementById('track_sound').play();
             track = x;
             document.getElementById(track).style.color = 'red';
         }
