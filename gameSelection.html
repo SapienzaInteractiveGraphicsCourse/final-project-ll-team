@@ -121,6 +121,7 @@
         var character = '';
         var track = '';
 
+        // text colour changes passing over (or out of) a button
         function over (id){
             document.getElementById('mouse').play();
             document.getElementById(id).style.color = 'red';
@@ -129,6 +130,7 @@
             if(character!=id && track!=id)
                 document.getElementById(id).style.color = 'black';
         }
+        // selecting character/track functions: colour change and variables update
         function selection(x){
             if(character != '')
                 document.getElementById(character).style.color = 'black';
@@ -153,6 +155,7 @@
             document.getElementById(track).style.color = 'red';
         }
 
+        // mute sound button
         function mute(id){
             if(document.getElementById(id).innerHTML == 'Mute music'){
                 document.getElementById('music').pause();
@@ -164,6 +167,7 @@
             }
         }
 
+        // start the race if and only if both character and track are selected
         function startEngine(){
             if(character != '' && track != ''){
                 document.getElementById('engine').play();
@@ -173,6 +177,7 @@
             }
         }
 
+        // the character and score (if grand prix is selected) variables are passed to the next HTML file attaching them to its link
         function startRace(){
             if(track == 'prix'){
                 if(character=='mario')
