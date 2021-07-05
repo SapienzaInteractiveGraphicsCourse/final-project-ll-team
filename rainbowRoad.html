@@ -47,7 +47,7 @@
         // arrays for the paths for the computer-controlled cars
         var points1 = [], points2 = [], points3 = [];
         
-        // arrays to store the checkpoints in case of falls from the race truck ...
+        // arrays to store the checkpoints in case of falls from the race track ...
         var ckpts = [];
         // ... together with the index of the current checkpoints that will be incremented every time we take an item
         var index = 0;
@@ -1295,7 +1295,7 @@
                 }
                 index = index % ckpts.length;      
                 
-                // collision car-walls: fall down of the truck
+                // collision car-walls: fall down of the track
                 // check over the vertical walls
                 if (car.position.x < -15 && car.position.z > -446 && car.position.z < 481) wall_vert1 = true;                     
                 if (car.position.x > 15 && car.position.x < 20 && car.position.z > -414 && car.position.z < 449) wall_vert_op1 = true;                     
@@ -1591,7 +1591,7 @@
                             case "E":
                                 /* Items Usage
                                  * little recap on how items work on our Mario Kart:
-                                 * - banana: if you use this object you will leave a banane peel on the race truck
+                                 * - banana: if you use this object you will leave a banane peel on the race track
                                  *              where enemies (or even yourself!) can trip and spin
                                  * - red shell: if used and if there are enemies in front of you, it will follow and hit one of them
                                  *                  otherwise, it will act like a green shell
