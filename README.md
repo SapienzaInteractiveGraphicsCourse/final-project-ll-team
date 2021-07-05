@@ -1,5 +1,5 @@
-# Interactive Graphics final project
 ![logo](./textures/gamelogo.png)
+# Interactive Graphics final project
 
 This is the repository of the final project of the Interactive Graphics course.
 
