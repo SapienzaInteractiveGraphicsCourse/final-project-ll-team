@@ -76,6 +76,14 @@
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, -1), scene);
             // the light is placed near the sun (see ske section below)
             light.position = new BABYLON.Vector3(269, 20, -10000);
+            // a blueish place...
+            light.diffuse = new BABYLON.Color3(0.80, 1, 1);
+            // ... but a little bit stronger light
+            light.intensity = 1.1;
+            // orange reflection of the sun
+            light.specular = new BABYLON.Color3(1, 0.85, 0.38);
+            light.groundColor = new BABYLON.Color3(0.0, 0.0, 0.0);
+
             // lighting - 1
             // ambient color requires the ambient color of the scene to be set
             scene.ambientColor = new BABYLON.Color3(0, 0, 0);
