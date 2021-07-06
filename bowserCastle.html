@@ -81,6 +81,11 @@
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
             // ... placed on the ceiling (for the position see the 'castle' instance below)
             light.position = new BABYLON.Vector3(325, 642, -60);
+            // a darker place, but not too dark...
+            light.diffuse = new BABYLON.Color3(0.85, 0.85, 0.85);
+            light.specular = new BABYLON.Color3(1, 1, 1);
+            light.intensity = 1;
+            light.groundColor = new BABYLON.Color3(0.2, 0.2, 0.2);
             
             // lighting - 1
             // ambient color requires the ambient color of the scene to be set
