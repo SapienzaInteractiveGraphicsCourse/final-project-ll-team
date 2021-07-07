@@ -1105,7 +1105,7 @@
 
             scene.registerBeforeRender(function () {
                 var currentTime = new Date().getTime();
-                raceTime = (currentTime - startTime)/1000;
+                raceTime = ((currentTime - startTime)/1000).toFixed(3);
 
                 ground.rotation.y += 0.001;
 
