@@ -14,7 +14,7 @@ Please, refer to the *Game Link* section below to play and interact with the gam
 ### Commands
 
 - **W**, **A**, **S** and **D** to move the car along the race track;
-- **E** to use the item collected if one of the item boxes is hitten;
+- **E** to use the item collected if one of the item boxes is hit;
 - **R** to restart the race;
 - ←, ↑, → and ↓ to move the camera.
 
