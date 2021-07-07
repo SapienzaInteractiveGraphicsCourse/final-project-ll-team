@@ -20,6 +20,19 @@
                 height: 100%;
                 touch-action: none;
             }
+
+            #fps {
+                position: absolute;
+                background-color: red;
+                border: 1px solid white;
+                text-align: center;
+                font-size: 16px;
+                color: white;
+                top: 15px;
+                left: 10px;
+                width: 60px;
+                height: 20px;
+            }
         </style>
 
         <script src="https://cdn.babylonjs.com/babylon.js"></script>
@@ -30,12 +43,14 @@
     </head>
 
    <body>
-
+    <div id="fps">0 fps</div>
     <canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
 
     <script>
         const canvas = document.getElementById("renderCanvas"); // Get the canvas element
         const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+        // show fps
+        var fps_interface = document.getElementById("fps");
         // better have some global variables to have them always available
         var car, car1, car2, car3, item;
         // arrays for the item boxes
@@ -1160,6 +1175,8 @@
             }
 
             scene.registerBeforeRender(function () {
+                fps_interface.innerHTML = engine.getFps().toFixed() + " fps";
+
                 var currentTime = new Date().getTime();
                 raceTime = ((currentTime - startTime)/1000).toFixed(3);
 
