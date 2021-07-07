@@ -1161,7 +1161,7 @@
 
             scene.registerBeforeRender(function () {
                 var currentTime = new Date().getTime();
-                raceTime = (currentTime - startTime)/1000;
+                raceTime = ((currentTime - startTime)/1000).toFixed(3);
 
                 // collision car-itembox loop
                 for (i=0; i<itemBoxPos.length; i++){
