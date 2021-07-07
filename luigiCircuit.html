@@ -1303,7 +1303,7 @@
 
             scene.registerBeforeRender(function () {
                 var currentTime = new Date().getTime();
-                raceTime = (currentTime - startTime)/1000;
+                raceTime = ((currentTime - startTime)/1000).toFixed(3);
                 impedance = setImpedance(car);
                 
                 // collision car-itembox loop
