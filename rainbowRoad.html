@@ -1397,8 +1397,8 @@
                 for (var k=0; k<carsFront.length; k++){
                     if(carsFront[k].lap <= lap && carsFront[k].half_lap == half_lap){
                         // first straight line + beginning of the first curve: we monitor the z values
-                        if (car.position.x > -16 && car.position.x < 40) {
-                            if (car.position.z > carsFront[k].position.z && carsFront[k].position.x > -16 && carsFront[k].position.x < 40){
+                        if (car.position.x > -16 && car.position.x < 15) {
+                            if (car.position.z > carsFront[k].position.z && carsFront[k].position.x > -16 && carsFront[k].position.x < 15){
                                 car_overTaken = carsFront.splice(k, 1);
                                 carsBehind.push(car_overTaken[0]);
 
@@ -1406,8 +1406,8 @@
                             }
                         }
                         // second straight line + beginning of the second curve: we monitor the x values
-                        else if (car.position.z > 442 && car.position.z < 500) {
-                            if (car.position.x > carsFront[k].position.x && carsFront[k].position.z > 442 && carsFront[k].position.z < 500){
+                        else if (car.position.z > 449 && car.position.z < 481) {
+                            if (car.position.x > carsFront[k].position.x && carsFront[k].position.z > 449 && carsFront[k].position.z < 481){
                                 car_overTaken = carsFront.splice(k, 1);
                                 carsBehind.push(car_overTaken[0]);
 
@@ -1415,8 +1415,8 @@
                             }
                         }
                         // thrid straight line + beginning of the thrid curve: we monitor the z values
-                        else if (car.position.x > 579 && car.position.x < 635) {
-                            if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 579 && carsFront[k].position.x < 635){
+                        else if (car.position.x > 521 && car.position.x < 553) {
+                            if (car.position.z < carsFront[k].position.z && carsFront[k].position.x > 521 && carsFront[k].position.x < 553){
                                 car_overTaken = carsFront.splice(k, 1);
                                 carsBehind.push(car_overTaken[0]);
 
@@ -1424,8 +1424,8 @@
                             }
                         }
                         // forth straight line + beginning of the forth curve: we monitor the x values
-                        else if (car.position.z > -580 && car.position.z < -503) {
-                            if (car.position.x < carsFront[k].position.x && carsFront[k].position.z > -580 && carsFront[k].position.z < -503){
+                        else if (car.position.z > -446 && car.position.z < -414) {
+                            if (car.position.x < carsFront[k].position.x && carsFront[k].position.z > -446 && carsFront[k].position.z < -414){
                                 car_overTaken = carsFront.splice(k, 1);
                                 carsBehind.push(car_overTaken[0]);
 
@@ -1434,12 +1434,13 @@
                         }
                     }
                 }
+
                 // 2) we are passively overtaken
                 for (var k=0; k<carsBehind.length; k++){
                     if(carsBehind[k].lap == lap && carsBehind[k].half_lap == half_lap){
                         // first straight line + beginning of the first curve: we monitor the z values
-                        if (car.position.x > -16 && car.position.x < 40) {
-                            if (car.position.z < carsBehind[k].position.z && carsBehind[k].position.x > -16 && carsBehind[k].position.x < 40){
+                        if (car.position.x > -16 && car.position.x < 15) {
+                            if (car.position.z < carsBehind[k].position.z && carsBehind[k].position.x > -16 && carsBehind[k].position.x < 15){
                                 car_overTaken = carsBehind.splice(k, 1);
                                 carsFront.push(car_overTaken[0]);
 
@@ -1447,24 +1448,24 @@
                             }
                         }
                         // second straight line + beginning of the second curve: we monitor the x values
-                        else if (car.position.z > 442 && car.position.z < 500) {
-                            if (car.position.x < carsBehind[k].position.x && carsBehind[k].position.z > 442 && carsBehind[k].position.z < 500){
+                        else if (car.position.z > 449 && car.position.z < 481) {
+                            if (car.position.x < carsBehind[k].position.x && carsBehind[k].position.z > 449 && carsBehind[k].position.z < 481){
                                 car_overTaken = carsBehind.splice(k, 1);
                                 carsFront.push(car_overTaken[0]);
 
                                 x2.text = 'Position: ' + String(carsFront.length + 1);                        }
                         }
                         // thrid straight line + beginning of the thrid curve: we monitor the z values
-                        else if (car.position.x > 579 && car.position.x < 635) {
-                            if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 579 && carsBehind[k].position.x < 635){
+                        else if (car.position.x > 521 && car.position.x < 553) {
+                            if (car.position.z > carsBehind[k].position.z && carsBehind[k].position.x > 521 && carsBehind[k].position.x < 553){
                                 car_overTaken = carsBehind.splice(k, 1);
                                 carsFront.push(car_overTaken[0]);
 
                                 x2.text = 'Position: ' + String(carsFront.length + 1);                        }
                         }
                         // forth straight line + beginning of the forth curve: we monitor the x values
-                        else if (car.position.z > -580 && car.position.z < -503) {
-                            if (car.position.x > carsBehind[k].position.x && carsBehind[k].position.z > -580 && carsBehind[k].position.z < -503){
+                        else if (car.position.z > -446 && car.position.z < -414) {
+                            if (car.position.x > carsBehind[k].position.x && carsBehind[k].position.z > -446 && carsBehind[k].position.z < -414){
                                 car_overTaken = carsBehind.splice(k, 1);
                                 carsFront.push(car_overTaken[0]);
 
