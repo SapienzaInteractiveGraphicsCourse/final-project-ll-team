@@ -68,6 +68,10 @@ Once selected the desired race modality and character, the user can start racing
 
 ### [Click here to play the game](https://sapienzainteractivegraphicscourse.github.io/final-project-ll-team/).
 
+## Report
+
+For further details, the report of the project is available in this repository at [this link](./report.pdf).
+
 ## Authors
 
 - Lorenzo Nicoletti - 1797464
