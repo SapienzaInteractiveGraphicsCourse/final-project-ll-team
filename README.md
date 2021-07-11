@@ -62,15 +62,21 @@ The user is free to select one of the four players provided in the game. We offe
 
 ### Start the game
 
-Once selected the desired race modality and character, the user can start racing. 
+Once selected the desired race modality and character, the user can start racing.
 
-## Game Link
+## Project utilities
+
+### Game Link
 
 ### [Click here to play the game](https://sapienzainteractivegraphicscourse.github.io/final-project-ll-team/).
 
-## Report
+### Report
 
 For further details, the report of the project is available in this repository at [this link](./report.pdf).
+
+### Gameplay
+
+If needed, we provide a demonstrative gameplay available at [this link](https://youtu.be/DXukgfC7IlA) to show how the interaction with our game should be.
 
 ## Authors
 
