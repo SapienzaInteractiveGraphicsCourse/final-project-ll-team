@@ -53,6 +53,8 @@
         var fps_interface = document.getElementById("fps");
         // better have some global variables to have them always available
         var car, car1, car2, car3, item;
+        // front/rear left/right wheels for the user car
+        var wheelFL, wheelFR, wheelRL, wheelRR;
         // arrays for the item boxes
         var itemBoxPos = [], itemBoxes = [];
         // arrays for 'negative' items
@@ -499,6 +501,51 @@
                     // the camera will follow the car with this
                     camera.lockedTarget = car;
 
+                    /*-----------------------Wheel------------------------------------------*/ 
+	
+                    // 'our' Wheel Material 
+                    var wheelMaterial = new BABYLON.StandardMaterial("wheel_mat", scene);
+                    var wheelTexture = new BABYLON.Texture("http://i.imgur.com/ZUWbT6L.png", scene);
+                    wheelMaterial.diffuseTexture = wheelTexture;
+
+                    //Set color for wheel tread as black
+                    var faceColors=[];
+                    faceColors[1] = new BABYLON.Color3(0,0,0);
+
+                    //set texture for flat face of wheel 
+                    var faceUV =[];
+                    faceUV[0] = new BABYLON.Vector4(0,0,1,1);
+                    faceUV[2] = new BABYLON.Vector4(0,0,1,1);
+
+                    //create wheel and apply material
+                    wheelFL = BABYLON.MeshBuilder.CreateCylinder("wheel", {diameter: 3, height: 1, tessellation: 24, faceColors:faceColors, faceUV:faceUV}, scene);
+                    wheelFL.material = wheelMaterial;
+                    
+                    wheelFL.rotate(BABYLON.Axis.X, Math.PI/2, BABYLON.Space.WORLD);
+                    wheelFL.rotate(BABYLON.Axis.Y, Math.PI/2, BABYLON.Space.WORLD);
+                    
+                    wheelFL.position = new BABYLON.Vector3(0.4, 0.2, 0.45);
+                    wheelFL.scaling = new BABYLON.Vector3(0.12, 0.22, 0.12);
+
+                    // CRUCIAL LINE!!!
+                    wheelFL.parent = car;
+
+                    // other wheels
+                    wheelFR = wheelFL.clone();
+                    wheelFR.position.x = -0.4;
+
+                    wheelRL = wheelFL.clone();
+                    wheelRL.position = new BABYLON.Vector3(0.45, 0.2, -0.35);
+                    wheelRL.scaling = new BABYLON.Vector3(0.15, 0.25, 0.15);
+                    
+                    wheelRR = wheelFL.clone();
+                    wheelRR.position = new BABYLON.Vector3(-0.45, 0.2, -0.35);
+                    wheelRR.scaling = new BABYLON.Vector3(0.15, 0.25, 0.15);
+
+                    
+                    // dispose does not work -> let's make the original wheels extremely small
+                    result.meshes[3].scaling = new BABYLON.Vector3(0.00001, 0.00001, 0.00001);
+
                 });
             else if(character_name == 'toad')
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_toad/", "scene.gltf", scene).then((result) => {
@@ -509,6 +556,50 @@
                     car.rotationQuaternion = null;
                     car.rotation.y = Math.PI;
                     camera.lockedTarget = car;
+
+                    /*-----------------------Wheel------------------------------------------*/ 
+	
+                    // 'our' Wheel Material 
+                    var wheelMaterial = new BABYLON.StandardMaterial("wheel_mat", scene);
+                    var wheelTexture = new BABYLON.Texture("http://i.imgur.com/ZUWbT6L.png", scene);
+                    wheelMaterial.diffuseTexture = wheelTexture;
+
+                    //Set color for wheel tread as black
+                    var faceColors=[];
+                    faceColors[1] = new BABYLON.Color3(0,0,0);
+
+                    //set texture for flat face of wheel 
+                    var faceUV =[];
+                    faceUV[0] = new BABYLON.Vector4(0,0,1,1);
+                    faceUV[2] = new BABYLON.Vector4(0,0,1,1);
+
+                    //create wheel and apply material
+                    wheelFL = BABYLON.MeshBuilder.CreateCylinder("wheel", {diameter: 3, height: 1, tessellation: 24, faceColors:faceColors, faceUV:faceUV}, scene);
+                    wheelFL.material = wheelMaterial;
+                    
+                    wheelFL.rotate(BABYLON.Axis.X, Math.PI/2, BABYLON.Space.WORLD);
+                    wheelFL.rotate(BABYLON.Axis.Y, Math.PI/2, BABYLON.Space.WORLD);
+                    
+                    wheelFL.position = new BABYLON.Vector3(0.65, 0.2, 1.1);
+                    wheelFL.scaling = new BABYLON.Vector3(0.15, 0.25, 0.15);
+
+                    // CRUCIAL LINE!!!
+                    wheelFL.parent = car;
+
+                    // other wheels
+                    wheelFR = wheelFL.clone();
+                    wheelFR.position.x = -0.55;
+
+                    wheelRL = wheelFL.clone();
+                    wheelRL.position = new BABYLON.Vector3(0.60, 0.2, 0);
+                    
+                    wheelRR = wheelFL.clone();
+                    wheelRR.position = new BABYLON.Vector3(-0.525, 0.2, 0);
+                    
+                    // dispose does not work -> let's make the original wheels extremely small
+                    //result.meshes[11].position.x = -3;
+                    result.meshes[11].scaling = new BABYLON.Vector3(0.00001, 0.00001, 0.00001);
+                
                 });
             else if(character_name == 'bowser')
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_bowser/", "scene.gltf", scene).then((result) => {
@@ -519,6 +610,50 @@
                     car.rotationQuaternion = null;
                     car.rotation.y = Math.PI;
                     camera.lockedTarget = car;
+
+                    /*-----------------------Wheel------------------------------------------*/ 
+	
+                    // 'our' Wheel Material 
+                    var wheelMaterial = new BABYLON.StandardMaterial("wheel_mat", scene);
+                    var wheelTexture = new BABYLON.Texture("http://i.imgur.com/ZUWbT6L.png", scene);
+                    wheelMaterial.diffuseTexture = wheelTexture;
+
+                    //Set color for wheel tread as black
+                    var faceColors=[];
+                    faceColors[1] = new BABYLON.Color3(0,0,0);
+
+                    //set texture for flat face of wheel 
+                    var faceUV =[];
+                    faceUV[0] = new BABYLON.Vector4(0,0,1,1);
+                    faceUV[2] = new BABYLON.Vector4(0,0,1,1);
+
+                    //create wheel and apply material
+                    wheelFL = BABYLON.MeshBuilder.CreateCylinder("wheel", {diameter: 3, height: 1, tessellation: 24, faceColors:faceColors, faceUV:faceUV}, scene);
+                    wheelFL.material = wheelMaterial;
+                    
+                    wheelFL.rotate(BABYLON.Axis.X, Math.PI/2, BABYLON.Space.WORLD);
+                    wheelFL.rotate(BABYLON.Axis.Y, Math.PI/2, BABYLON.Space.WORLD);
+                    
+                    wheelFL.position = new BABYLON.Vector3(0.95, 0.3, 1.3);
+                    wheelFL.scaling = new BABYLON.Vector3(0.29, 0.49, 0.29);
+
+                    // CRUCIAL LINE!!!
+                    wheelFL.parent = car;
+
+                    // other wheels
+                    wheelFR = wheelFL.clone();
+                    wheelFR.position.x = -1.15;
+
+                    wheelRL = wheelFL.clone();
+                    wheelRL.position = new BABYLON.Vector3(0.95, 0.25, -0.25);
+                    
+                    wheelRR = wheelFL.clone();
+                    wheelRR.position = new BABYLON.Vector3(-1.15, 0.25, -0.25);
+                    
+                    // dispose does not work -> let's make the original wheels extremely small
+                    //result.meshes[2].position.x = -3;
+                    result.meshes[2].scaling = new BABYLON.Vector3(0.00001, 0.00001, 0.00001);
+                
                 });
             else // donkey
                 BABYLON.SceneLoader.ImportMeshAsync("", "models/kart_dk/", "scene.gltf", scene).then((result) => {
@@ -529,6 +664,50 @@
                     car.rotationQuaternion = null;
                     car.rotation.y = Math.PI;
                     camera.lockedTarget = car;
+
+                    /*-----------------------Wheel------------------------------------------*/ 
+	
+                    // 'our' Wheel Material 
+                    var wheelMaterial = new BABYLON.StandardMaterial("wheel_mat", scene);
+                    var wheelTexture = new BABYLON.Texture("http://i.imgur.com/ZUWbT6L.png", scene);
+                    wheelMaterial.diffuseTexture = wheelTexture;
+
+                    //Set color for wheel tread as black
+                    var faceColors=[];
+                    faceColors[1] = new BABYLON.Color3(0,0,0);
+
+                    //set texture for flat face of wheel 
+                    var faceUV =[];
+                    faceUV[0] = new BABYLON.Vector4(0,0,1,1);
+                    faceUV[2] = new BABYLON.Vector4(0,0,1,1);
+
+                    //create wheel and apply material
+                    wheelFL = BABYLON.MeshBuilder.CreateCylinder("wheel", {diameter: 3, height: 1, tessellation: 24, faceColors:faceColors, faceUV:faceUV}, scene);
+                    wheelFL.material = wheelMaterial;
+                    
+                    wheelFL.rotate(BABYLON.Axis.X, Math.PI/2, BABYLON.Space.WORLD);
+                    wheelFL.rotate(BABYLON.Axis.Y, Math.PI/2, BABYLON.Space.WORLD);
+                    
+                    wheelFL.position = new BABYLON.Vector3(0.6, 0.1, 1.2);
+                    wheelFL.scaling = new BABYLON.Vector3(0.12, 0.22, 0.12);
+
+                    // CRUCIAL LINE!!!
+                    wheelFL.parent = car;
+
+                    // other wheels
+                    wheelFR = wheelFL.clone();
+                    wheelFR.position.x = -0.6;
+
+                    wheelRL = wheelFL.clone();
+                    wheelRL.position = new BABYLON.Vector3(0.6, 0.1, 0.5);
+                    
+                    wheelRR = wheelFL.clone();
+                    wheelRR.position = new BABYLON.Vector3(-0.6, 0.1, 0.5);
+                    
+                    // dispose does not work -> let's make the original wheels extremely small
+                    //result.meshes[2].position.x = -3;
+                    result.meshes[2].scaling = new BABYLON.Vector3(0.00001, 0.00001, 0.00001);
+                
                 });
             
             // three cpu's cars
@@ -1651,6 +1830,12 @@
                     // car's movement update
                     car.position.z += (base_speed + acceleration + sprint - impedance) * Math.cos(angle);
                     car.position.x += (base_speed + acceleration + sprint - impedance) * Math.sin(angle);
+
+                    // wheels' animation
+                    wheelFL.rotate(BABYLON.Axis.Y, (base_speed + acceleration + sprint - impedance)/3, BABYLON.Space.LOCAL);
+                    wheelFR.rotate(BABYLON.Axis.Y, (base_speed + acceleration + sprint - impedance)/3, BABYLON.Space.LOCAL);
+                    wheelRL.rotate(BABYLON.Axis.Y, (base_speed + acceleration + sprint - impedance)/3, BABYLON.Space.LOCAL);
+                    wheelRR.rotate(BABYLON.Axis.Y, (base_speed + acceleration + sprint - impedance)/3, BABYLON.Space.LOCAL);
 
                     // item's movement update
                     if(item){
