@@ -1509,13 +1509,17 @@
                             item.position.y = 0.95;
                         // we have four items randomly chosen
                         throwed = 0;
-                        if(Math.random()<0.25)
+			
+			// 25% for each item
+			r = Math.random();
+			    
+                        if(r < 0.25)
                             createItem('red_shell');
                         
-                        else if(Math.random()<0.5)
+                        else if(r < 0.5)
                             createItem('banana');
                         
-                        else if(Math.random()<0.75)
+                        else if(r < 0.75)
                             createItem('mushroom');
                         
                         else
