@@ -76,7 +76,7 @@ For further details, the report of the project is available in this repository a
 
 ### Gameplay
 
-If needed, we provide a demonstrative gameplay available at [this link](https://youtu.be/DXukgfC7IlA) to show how the interaction with our game should be.
+If needed, we provide a demonstrative gameplay available at [this link](https://www.youtube.com/watch?v=n5YD2v_OD2o) to show how the interaction with our game should be.
 
 ## Authors
 
